@@ -1,0 +1,63 @@
+{
+  "name": "kaiji",
+  "displayName": "Kaiji",
+  "publisher": "samuel-dev",
+  "description": "What you must do now is to win! Just win! Don't hope to win, you have to win! Living without winning is not living.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.125.0"
+  },
+  "main": "./out/extension.js",
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "extensionDependencies": [
+    "vscode.git"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "kaiji.openDashboard",
+        "title": "Kaiji: Abrir Meu Espaço"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "kaiji-sidebar",
+          "title": "Kaiji Decor",
+          "icon": "media/icon.png"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.125.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "24.x",
+    "typescript-eslint": "^8.61.1",
+    "eslint": "^10.5.0",
+    "typescript": "^6.0.3",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.0.0"
+  },
+  "overrides": {
+    "diff": "^8.0.4",
+    "serialize-javascript": "^7.0.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samuelspineli34/kaiji.git"
+  }
+}
