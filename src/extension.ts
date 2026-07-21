@@ -1,45 +1,38 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { ITEM_CATALOG, UNLOCKABLE_THEMES, Item, Rarity, Offset } from './items';
 
-type Rarity = 'comum' | 'incomum' | 'rara' | 'lendaria';
-
-interface Item {
-    id: string;
-    name: string;
-    emoji: string;
-    cost: number;
-    rarity: Rarity;
-    category: 'moveis' | 'eletronicos' | 'decoracao';
-    placement: 'desk' | 'floor' | 'wall';
-}
-
-const ITEM_CATALOG: Record<string, Item> = {
-    'coffee_mug': { id: 'coffee_mug', name: 'Caneca de Café', emoji: '☕', cost: 30, rarity: 'comum', category: 'decoracao', placement: 'desk' },
-    'cactus': { id: 'cactus', name: 'Mini Cacto', emoji: '🌵', cost: 45, rarity: 'comum', category: 'decoracao', placement: 'desk' },
-    'lamp': { id: 'lamp', name: 'Luminária de Mesa', emoji: '💡', cost: 60, rarity: 'comum', category: 'eletronicos', placement: 'desk' },
-    'carpet': { id: 'carpet', name: 'Tapete Básico', emoji: '🧹', cost: 75, rarity: 'comum', category: 'moveis', placement: 'floor' },
-    'chair': { id: 'chair', name: 'Cadeira Ergonômica', emoji: '🪑', cost: 150, rarity: 'incomum', category: 'moveis', placement: 'floor' },
-    'bookshelf': { id: 'bookshelf', name: 'Estante de Livros', emoji: '📚', cost: 180, rarity: 'incomum', category: 'moveis', placement: 'floor' },
-    'keyboard': { id: 'keyboard', name: 'Teclado Mecânico RGB', emoji: '⌨️', cost: 220, rarity: 'incomum', category: 'eletronicos', placement: 'desk' },
-    'speakers': { id: 'speakers', name: 'Monitores de Áudio', emoji: '🔊', cost: 250, rarity: 'incomum', category: 'eletronicos', placement: 'desk' },
-    'ultrawide': { id: 'ultrawide', name: 'Monitor Ultrawide', emoji: '🖥️', cost: 450, rarity: 'rara', category: 'eletronicos', placement: 'desk' },
-    'bonsai': { id: 'bonsai', name: 'Bonsai Imperial', emoji: '🪴', cost: 400, rarity: 'rara', category: 'decoracao', placement: 'floor' },
-    'retro_console': { id: 'retro_console', name: 'Fliperama Portátil', emoji: '🎮', cost: 500, rarity: 'rara', category: 'eletronicos', placement: 'desk' },
-    'lava_lamp': { id: 'lava_lamp', name: 'Luminária de Lava', emoji: '🏮', cost: 380, rarity: 'rara', category: 'decoracao', placement: 'desk' },
-    'nasa_pc': { id: 'nasa_pc', name: 'Supercomputador Quântico', emoji: '👾', cost: 1000, rarity: 'lendaria', category: 'eletronicos', placement: 'desk' },
-    'hologram': { id: 'hologram', name: 'Projetor Estelar', emoji: '🌌', cost: 1200, rarity: 'lendaria', category: 'eletronicos', placement: 'wall' },
-    'dragon': { id: 'dragon', name: 'Estátua de Dragão Dourado', emoji: '🐉', cost: 1500, rarity: 'lendaria', category: 'decoracao', placement: 'floor' },
-    'portal': { id: 'portal', name: 'Portal Interdimensional', emoji: '🌀', cost: 2000, rarity: 'lendaria', category: 'decoracao', placement: 'wall' }
-};
-
-// Histórico de tamanho dos arquivos para calcular a diferença de caracteres ao salvar
 const documentCharTracker = new Map<string, number>();
 
 export function activate(context: vscode.ExtensionContext) {
-    console.log('Kaiji Decor TypeScript ativa!');
+    console.log('Kaiji Decor Ativa!');
 
-    // Sincroniza o tamanho dos arquivos abertos inicialmente
+    const provider = new KaijiSidebarProvider(context);
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider('kaiji.sidebarView', provider)
+    );
+
+    context.subscriptions.push(
+        vscode.commands.registerCommand('kaiji.resetProgress', async () => {
+            const answer = await vscode.window.showWarningMessage(
+                'Deseja realmente formatar seu save? Suas moedas, decorações e posições dos móveis serão deletadas para sempre.',
+                { modal: true },
+                'Apagar Save'
+            );
+            if (answer === 'Apagar Save') {
+                context.globalState.update('decor-coins', 50);
+                context.globalState.update('decor-inventory', []);
+                context.globalState.update('decor-placed', []);
+                context.globalState.update('decor-offsets', {});
+                context.globalState.update('decor-theme', 'yakuza');
+                context.globalState.update('decor-unlocked-themes', ['yakuza']);
+                provider.updateState();
+                vscode.window.showInformationMessage('Progresso limpo.');
+            }
+        })
+    );
+
     vscode.workspace.textDocuments.forEach(doc => {
         documentCharTracker.set(doc.uri.toString(), doc.getText().length);
     });
@@ -48,7 +41,6 @@ export function activate(context: vscode.ExtensionContext) {
         documentCharTracker.set(doc.uri.toString(), doc.getText().length);
     });
 
-    // Gatilho de Salvamento (On Save)
     vscode.workspace.onDidSaveTextDocument((document) => {
         const uriStr = document.uri.toString();
         const currentLength = document.getText().length;
@@ -56,166 +48,265 @@ export function activate(context: vscode.ExtensionContext) {
         documentCharTracker.set(uriStr, currentLength);
 
         const diff = currentLength - previousLength;
-
-        // Se o usuário adicionou caracteres válidos
         if (diff > 0) {
-            handleSaveReward(context, diff);
+            provider.handleSaveAndAssessChest(diff);
         }
     });
-
-    context.subscriptions.push(
-        vscode.commands.registerCommand('kaiji.openDashboard', () => {
-            openDashboardPanel(context);
-        })
-    );
 }
 
-// Lógica de cálculo de Rariadade e Recompensa com base no esforço
-function handleSaveReward(context: vscode.ExtensionContext, charsAdded: number) {
-    if (charsAdded < 30) {
-        // Sem baú, apenas consolação
-        const consoleCoins = Math.floor(Math.random() * 3) + 1;
-        addCoins(context, consoleCoins);
-        vscode.window.setStatusBarMessage(`✍️ Alteração pequena: +${consoleCoins} Moedas coletadas!`, 4000);
-        return;
-    }
 
-    let rarity: Rarity = 'comum';
-    if (charsAdded >= 1500) {
-        rarity = 'lendaria'; // Jackpot!
-    } else if (charsAdded >= 500) {
-        rarity = 'rara';
-    } else if (charsAdded >= 150) {
-        rarity = 'incomum';
-    }
 
-    vscode.window.showInformationMessage(`💾 Código salvo! Você conquistou um Baú ${rarity.toUpperCase()} (+${charsAdded} Caracteres)!`);
-    openChestPanel(context, rarity);
+function getWebviewUri(context: vscode.ExtensionContext, webview: vscode.Webview, relativePath: string): string {
+    const diskPath = vscode.Uri.joinPath(context.extensionUri, 'media', 'icons', relativePath);
+    return webview.asWebviewUri(diskPath).toString();
 }
 
-// Funções do globalState
-function getCoins(context: vscode.ExtensionContext): number {
-    return context.globalState.get<number>('decor-coins', 50);
-}
+function getResolvedCatalog(context: vscode.ExtensionContext, webview: vscode.Webview): Record<string, any> {
+    const resolved: Record<string, any> = {};
+    for (const [key, item] of Object.entries(ITEM_CATALOG)) {
+        const resolvedItem = { ...item };
+        resolvedItem.icon = getWebviewUri(context, webview, item.icon);
 
-function addCoins(context: vscode.ExtensionContext, amount: number): void {
-    const current = getCoins(context);
-    context.globalState.update('decor-coins', current + amount);
-}
-
-function getInventory(context: vscode.ExtensionContext): string[] {
-    return context.globalState.get<string[]>('decor-inventory', []);
-}
-
-function giveItemDirectly(context: vscode.ExtensionContext, itemId: string): void {
-    const inventory = getInventory(context);
-    if (!inventory.includes(itemId)) {
-        inventory.push(itemId);
-        context.globalState.update('decor-inventory', inventory);
-    }
-}
-
-function buyItem(context: vscode.ExtensionContext, itemId: string, cost: number): boolean {
-    const coins = getCoins(context);
-    const inventory = getInventory(context);
-
-    if (coins >= cost && !inventory.includes(itemId)) {
-        context.globalState.update('decor-coins', coins - cost);
-        inventory.push(itemId);
-        context.globalState.update('decor-inventory', inventory);
-        return true;
-    }
-    return false;
-}
-
-// Lê arquivos HTML externos e converte para string aceitável pelo Webview
-function getHtmlContent(context: vscode.ExtensionContext, filename: string): string {
-    const filePath = path.join(context.extensionPath, 'media', filename);
-    return fs.readFileSync(filePath, 'utf8');
-}
-
-// 2. WEBVIEW DA ROLETA (media/roulette.html)
-function openChestPanel(context: vscode.ExtensionContext, rarity: Rarity): void {
-    const panel = vscode.window.createWebviewPanel(
-        'chestPanel',
-        'Abrindo Caixa...',
-        vscode.ViewColumn.Beside,
-        { enableScripts: true }
-    );
-
-    let coinReward = 0;
-    if (rarity === 'lendaria') {
-        coinReward = Math.floor(Math.random() * 201) + 200; // 200-400
-    } else if (rarity === 'rara') {
-        coinReward = Math.floor(Math.random() * 101) + 100; // 100-200
-    } else if (rarity === 'incomum') {
-        coinReward = Math.floor(Math.random() * 51) + 40; // 40-90
-    } else {
-        coinReward = Math.floor(Math.random() * 11) + 15; // 15-25
-    }
-
-    const matchingItems = Object.values(ITEM_CATALOG).filter(i => i.rarity === rarity);
-    const rolledItem = matchingItems[Math.floor(Math.random() * matchingItems.length)];
-
-    panel.webview.onDidReceiveMessage((message) => {
-        if (message.command === 'ready') {
-            panel.webview.postMessage({
-                command: 'setupChest',
-                rarity: rarity,
-                coinReward: coinReward,
-                rolledItem: rolledItem
-            });
-        } else if (message.command === 'claimRewards') {
-            addCoins(context, coinReward);
-            if (rolledItem) {
-                giveItemDirectly(context, rolledItem.id);
+        if (item.animation) {
+            const animatedFrames: string[] = [];
+            for (let i = 1; i <= item.animation.frames; i++) {
+                const framePath = `${item.animation.folder}${i}${item.animation.suffix}`;
+                animatedFrames.push(getWebviewUri(context, webview, framePath));
             }
-            vscode.window.showInformationMessage(`Você resgatou suas recompensas!`);
-            panel.dispose();
+            (resolvedItem as any).animationFrames = animatedFrames;
         }
-    });
-
-    panel.webview.html = getHtmlContent(context, 'roulette.html');
+        resolved[key] = resolvedItem;
+    }
+    return resolved;
 }
 
-// 3. WEBVIEW DO DASHBOARD (media/dashboard.html)
-function openDashboardPanel(context: vscode.ExtensionContext): void {
-    const panel = vscode.window.createWebviewPanel(
-        'dashboardPanel',
-        'Meu Espaço Decorativo',
-        vscode.ViewColumn.One,
-        { enableScripts: true }
-    );
+class KaijiSidebarProvider implements vscode.WebviewViewProvider {
+    private _view?: vscode.WebviewView;
 
-    const updateWebviewState = () => {
-        panel.webview.postMessage({
-            command: 'syncState',
-            coins: getCoins(context),
-            inventory: getInventory(context)
-        });
-    };
+    constructor(private readonly _context: vscode.ExtensionContext) { }
 
-    panel.webview.onDidReceiveMessage((message) => {
-        switch (message.command) {
-            case 'ready':
-                updateWebviewState();
-                return;
-            case 'buyItem':
-                if (message.itemId && message.cost !== undefined) {
-                    const success = buyItem(context, message.itemId, message.cost);
-                    if (success) {
-                        vscode.window.showInformationMessage(`Item colocado no cenário!`);
-                        updateWebviewState();
-                    } else {
-                        vscode.window.showErrorMessage(`Moedas insuficientes!`);
+    resolveWebviewView(
+        webviewView: vscode.WebviewView,
+        _context: vscode.WebviewViewResolveContext,
+        _token: vscode.CancellationToken
+    ): void | Thenable<void> {
+        this._view = webviewView;
+
+        webviewView.webview.options = {
+            enableScripts: true,
+            localResourceRoots: [this._context.extensionUri]
+        };
+
+        webviewView.webview.onDidReceiveMessage((message) => {
+            switch (message.command) {
+                case 'ready':
+                    this.updateState();
+                    return;
+                case 'saveRewards':
+                    if (message.amount !== undefined) {
+                        this.addCoins(message.amount);
+                        if (message.itemId) {
+                            if (UNLOCKABLE_THEMES.includes(message.itemId)) {
+                                this.unlockTheme(message.itemId);
+                            } else {
+                                this.giveItemDirectly(message.itemId);
+                            }
+                        }
+                        this.updateState();
                     }
-                }
-                return;
-        }
-    });
+                    return;
+                case 'togglePlacement':
+                    if (message.itemId) {
+                        this.toggleItemPlacement(message.itemId);
+                        this.updateState();
+                    }
+                    return;
+                // No método resolveWebviewView, dentro de webviewView.webview.onDidReceiveMessage, atualize o caso 'saveOffset':
+                case 'saveOffset':
+                    if (message.itemId && message.x !== undefined && message.y !== undefined) {
+                        this.saveItemOffset(message.itemId, message.x, message.y, message.z || 0);
+                    }
+                    return;
+                case 'saveTheme':
+                    if (message.themeId) {
+                        this.saveTheme(message.themeId);
+                        this.updateState();
+                    }
+                    return;
+            }
+        });
 
-    let html = getHtmlContent(context, 'dashboard.html');
-    // Injeta o catálogo diretamente no HTML de forma segura
-    html = html.replace('/*CATALOG_PLACEHOLDER*/', `const catalog = ${JSON.stringify(ITEM_CATALOG)};`);
-    panel.webview.html = html;
+        let html = fs.readFileSync(
+            path.join(this._context.extensionPath, 'media', 'sidebar.html'),
+            'utf8'
+        );
+        html = html.replace('/*CATALOG_PLACEHOLDER*/', `const catalog = ${JSON.stringify(getResolvedCatalog(this._context, webviewView.webview))};`);
+        webviewView.webview.html = html;
+    }
+
+    public handleSaveAndAssessChest(charsAdded: number): void {
+        if (!this._view) {
+            return;
+        }
+
+        if (charsAdded < 30) {
+            const consoleCoins = Math.floor(Math.random() * 3) + 1;
+            this.addCoins(consoleCoins);
+            this.updateState();
+            vscode.window.setStatusBarMessage(`✍️ Modificações curtas: +${consoleCoins} moedas.`, 4000);
+            return;
+        }
+
+        let rarity: Rarity = 'comum';
+        let coinReward = Math.floor(Math.random() * 11) + 15;
+
+        if (charsAdded >= 1500) {
+            rarity = Math.random() < 0.15 ? 'lendaria' : 'rara';
+            coinReward = Math.floor(Math.random() * 201) + 200;
+        } else if (charsAdded >= 500) {
+            rarity = Math.random() < 0.25 ? 'rara' : 'incomum';
+            coinReward = Math.floor(Math.random() * 101) + 100;
+        } else if (charsAdded >= 150) {
+            rarity = Math.random() < 0.35 ? 'incomum' : 'comum';
+            coinReward = Math.floor(Math.random() * 51) + 40;
+        }
+
+        const rVal = Math.random();
+        let rollType = 'coins';
+        let rolledItem: any = null;
+
+        if (rVal < 0.40) {
+            rollType = 'coins';
+        } else if (rVal < 0.80) {
+            rollType = 'chest';
+            const matchingItems = Object.values(ITEM_CATALOG).filter(i => i.rarity === rarity && i.obtainable === 'chest');
+            rolledItem = matchingItems[Math.floor(Math.random() * matchingItems.length)];
+        } else {
+            rollType = 'theme';
+            const themeRolls: Record<Rarity, { id: string, name: string }[]> = {
+                comum: [{ id: 'yakuza', name: 'Tema Tradicional Teiai' }],
+                incomum: [{ id: 'zen', name: 'Tema Tatami Zen' }],
+                rara: [
+                    { id: 'dusk', name: 'Tema Crepúsculo Tóquio' },
+                    { id: 'cyber', name: 'Tema Cyberpunk Neon' },
+                    { id: 'forest', name: 'Tema Floresta de Cedros' },
+                    { id: 'coffee', name: 'Tema Grãos de Café' }
+                ],
+                lendaria: [
+                    { id: 'gold', name: 'Tema Pachinko Gold' },
+                    { id: 'sakura', name: 'Tema Cerejeira de Kyoto' },
+                    { id: 'nordic', name: 'Tema Minimalista Nórdico' }
+                ]
+            };
+            const rolledTheme = themeRolls[rarity][Math.floor(Math.random() * themeRolls[rarity].length)];
+            rolledItem = {
+                id: rolledTheme.id,
+                name: rolledTheme.name,
+                icon: ''
+            };
+        }
+
+        const resolvedRolledItem = (rolledItem && rollType === 'chest') ? {
+            ...rolledItem,
+            icon: getWebviewUri(this._context, this._view.webview, rolledItem.icon)
+        } : rolledItem;
+
+        this._view.webview.postMessage({
+            command: 'triggerChest',
+            rollType,
+            rarity,
+            coinReward,
+            rolledItem: resolvedRolledItem
+        });
+
+        vscode.commands.executeCommand('workbench.view.explorer');
+    }
+
+    public updateState(): void {
+        if (this._view) {
+            const wallUri = getWebviewUri(this._context, this._view.webview, 'Wall Green plain.png');
+            const woodTileUri = getWebviewUri(this._context, this._view.webview, 'Tiles/light_brown/tile_light_brown_1.png');
+            const grayTileUri = getWebviewUri(this._context, this._view.webview, 'Tiles/gray/tile_gray_1.png');
+
+            this._view.webview.postMessage({
+                command: 'syncState',
+                coins: this.getCoins(),
+                inventory: this.getInventory(),
+                placed: this.getPlaced(),
+                offsets: this.getOffsets(),
+                theme: this.getTheme(),
+                unlockedThemes: this.getUnlockedThemes(),
+                wallUri: wallUri,
+                woodTileUri: woodTileUri,
+                grayTileUri: grayTileUri
+            });
+        }
+    }
+
+    public getCoins(): number {
+        return this._context.globalState.get<number>('decor-coins', 50);
+    }
+
+    public addCoins(amount: number): void {
+        const current = this.getCoins();
+        this._context.globalState.update('decor-coins', current + amount);
+    }
+
+    public getInventory(): string[] {
+        return this._context.globalState.get<string[]>('decor-inventory', []);
+    }
+
+    public getPlaced(): string[] {
+        return this._context.globalState.get<string[]>('decor-placed', []);
+    }
+
+    public getTheme(): string {
+        return this._context.globalState.get<string>('decor-theme', 'yakuza');
+    }
+
+    public getUnlockedThemes(): string[] {
+        return this._context.globalState.get<string[]>('decor-unlocked-themes', ['yakuza']);
+    }
+
+    public getOffsets(): Record<string, Offset> {
+        return this._context.globalState.get<Record<string, Offset>>('decor-offsets', {});
+    }
+
+    public giveItemDirectly(itemId: string): void {
+        const inventory = this.getInventory();
+        if (!inventory.includes(itemId)) {
+            inventory.push(itemId);
+            this._context.globalState.update('decor-inventory', inventory);
+        }
+    }
+
+    public unlockTheme(themeId: string): void {
+        const unlocked = this.getUnlockedThemes();
+        if (!unlocked.includes(themeId)) {
+            unlocked.push(themeId);
+            this._context.globalState.update('decor-unlocked-themes', unlocked);
+        }
+    }
+
+    public toggleItemPlacement(itemId: string): void {
+        let placed = this.getPlaced();
+        if (placed.includes(itemId)) {
+            placed = placed.filter(id => id !== itemId);
+        } else {
+            placed.push(itemId);
+        }
+        this._context.globalState.update('decor-placed', placed);
+    }
+
+    // Atualize a assinatura e corpo do método saveItemOffset na classe KaijiSidebarProvider:
+    public saveItemOffset(itemId: string, x: number, y: number, z: number): void {
+        const offsets = this.getOffsets();
+        offsets[itemId] = { x, y, z };
+        this._context.globalState.update('decor-offsets', offsets);
+    }
+
+    public saveTheme(themeId: string): void {
+        this._context.globalState.update('decor-theme', themeId);
+    }
+
 }

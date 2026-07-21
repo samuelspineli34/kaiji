@@ -3,7 +3,7 @@
   "displayName": "Kaiji",
   "publisher": "samuel-dev",
   "description": "What you must do now is to win! Just win! Don't hope to win, you have to win! Living without winning is not living.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.125.0"
   },
@@ -11,25 +11,30 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [
+"activationEvents": [
     "onStartupFinished"
   ],
   "extensionDependencies": [
     "vscode.git"
   ],
-  "contributes": {
+"contributes": {
     "commands": [
       {
         "command": "kaiji.openDashboard",
         "title": "Kaiji: Abrir Meu Espaço"
+      },
+      {
+        "command": "kaiji.resetProgress",
+        "title": "Kaiji: Resetar Progresso"
       }
     ],
-    "viewsContainers": {
-      "activitybar": [
+    "views": {
+      "explorer": [
         {
-          "id": "kaiji-sidebar",
-          "title": "Kaiji Decor",
-          "icon": "media/icon.png"
+          "icon": "media/icon.png",
+          "type": "webview",
+          "id": "kaiji.sidebarView",
+          "name": "Kaiji"
         }
       ]
     }

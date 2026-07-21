@@ -1,8 +1,12 @@
+<!-- dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Meu Espaço</title>
+    <!-- Importação de ícones do Google -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         body {
             background: #090714;
@@ -15,12 +19,14 @@
             box-sizing: border-box;
             gap: 20px;
         }
+
         .main-content {
-            flex: 1.4;
+            flex: 1.6;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
+
         .sidebar-shop {
             flex: 1;
             background: rgba(21, 17, 48, 0.7);
@@ -30,12 +36,19 @@
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
-            box-shadow: 0 0 20px rgba(112,0,255,0.25);
+            box-shadow: 0 0 20px rgba(112, 0, 255, 0.25);
         }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* AMBIENTE ISOMÉTRICO AMPLO (Paredes de imagem + piso montado por ladrilhos) */
         .isometric-container {
             position: relative;
             width: 100%;
-            height: 420px;
+            height: 440px;
             background: #151130;
             border: 2px solid #7000ff;
             border-radius: 16px;
@@ -43,114 +56,282 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
+            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.6);
         }
+
         .room-base {
             position: relative;
-            width: 300px;
-            height: 300px;
+            width: 320px;
+            height: 320px;
             transform: rotateX(60deg) rotateZ(-45deg);
             transform-style: preserve-3d;
-            background: #2a2050;
-            box-shadow: 10px 10px 40px rgba(0,0,0,0.5);
+            background-repeat: repeat;
+            background-size: 32px 32px;
+            box-shadow: 10px 10px 40px rgba(0, 0, 0, 0.5);
+            transition: background 0.4s ease;
         }
+
+        /* Rotação vertical correta e desativação de pointer-events para não bloquear cliques nos itens */
         .wall-left {
             position: absolute;
-            width: 300px;
-            height: 150px;
-            background: #392c6e;
-            transform: rotateX(-90deg) translateZ(-150px) translateY(-75deg);
+            width: 320px;
+            height: 160px;
+            /* Altura da parede */
+            left: 0;
+            top: -159.5px;
+            /* Alinhamento rente para eliminar frestas */
+            transform-origin: bottom;
+            transform: rotateX(-90deg);
+            /* Erguido perfeitamente para cima e trás */
             transform-style: preserve-3d;
-            border-bottom: 3px solid #00f0ff;
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-color: rgba(143, 116, 95, 0.85);
+            /* Cor base cozy de fallback */
+            transition: background-color 0.4s ease, filter 0.4s ease;
+            pointer-events: none;
+            /* Não obstrui cliques nos itens do cenário */
         }
+
         .wall-right {
             position: absolute;
-            width: 150px;
-            height: 300px;
-            background: #20173e;
-            transform: rotateY(90deg) translateZ(150px) translateX(-75deg);
+            width: 160px;
+            /* Altura da parede */
+            height: 320px;
+            /* Comprimento */
+            left: -159.5px;
+            /* Alinhamento rente para eliminar frestas */
+            top: 0;
+            transform-origin: right;
+            transform: rotateY(90deg);
+            /* Erguido perfeitamente para cima e trás */
             transform-style: preserve-3d;
-            border-bottom: 3px solid #00f0ff;
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-color: rgba(123, 98, 78, 0.85);
+            /* Cor base cozy de fallback */
+            transition: background-color 0.4s ease, filter 0.4s ease;
+            pointer-events: none;
+            /* Não obstrui cliques nos itens do cenário */
         }
+
+        /* RENDERIZADOR DE IMAGENS PIXEL ART */
         .room-item {
             position: absolute;
             transform-style: preserve-3d;
-            transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            cursor: pointer;
         }
-        .item-visual {
-            font-size: 45px;
-            filter: drop-shadow(0 5px 8px rgba(0,0,0,0.4));
-            animation: float 3s ease-in-out infinite alternate;
-        }
-        .item-glow {
-            width: 25px;
-            height: 10px;
-            background: rgba(0, 240, 255, 0.4);
-            border-radius: 50%;
-            filter: blur(4px);
-            margin-top: -5px;
-        }
-        .placement-desk { left: 140px; top: 120px; z-index: 100; transform: rotateZ(45deg) rotateX(-60deg) translateZ(60px); }
-        .placement-floor { left: 80px; top: 180px; z-index: 50; transform: rotateZ(45deg) rotateX(-60deg) translateZ(10px); }
-        .placement-wall { left: 10px; top: 40px; z-index: 10; transform: rotateZ(45deg) rotateX(-60deg) translateZ(100px); }
 
-        .shop-tabs {
+        .item-visual {
             display: flex;
-            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid transparent;
+            transition: transform 0.2s, filter 0.2s;
+        }
+
+        .item-visual img {
+            max-width: 48px;
+            max-height: 64px;
+            display: block;
+        }
+
+        .room-item:hover .item-visual {
+            filter: drop-shadow(0 0 8px #00f0ff);
+        }
+
+        .room-item.selected .item-visual {
+            filter: drop-shadow(0 0 12px #ff007f);
+            animation: pulse-select 1.5s infinite alternate;
+        }
+
+        .item-glow {
+            width: 24px;
+            height: 8px;
+            background: rgba(0, 240, 255, 0.3);
+            border-radius: 50%;
+            filter: blur(3px);
+            margin-top: -3px;
+        }
+
+        .placement-desk {
+            left: 140px;
+            top: 120px;
+            z-index: 100;
+            transform: translate(-50%, -100%) rotateZ(45deg) rotateX(-60deg) translateZ(60px);
+        }
+
+        .placement-floor {
+            left: 80px;
+            top: 180px;
+            z-index: 50;
+            transform: translate(-50%, -100%) rotateZ(45deg) rotateX(-60deg) translateZ(10px);
+        }
+
+        .placement-wall {
+            left: 10px;
+            top: 40px;
+            z-index: 10;
+            transform: translate(-50%, -100%) rotateZ(45deg) rotateX(-60deg) translateZ(100px);
+        }
+
+        /* PAD DE CONTROLE DE MOVIMENTAÇÃO (D-PAD) */
+        .movement-controls {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            background: rgba(21, 17, 48, 0.85);
+            border: 1px solid #7000ff;
+            padding: 10px 20px;
+            border-radius: 12px;
+            animation: fadeIn 0.3s forwards;
+            max-width: 320px;
+            margin-top: 10px;
+        }
+
+        .dpad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            width: 120px;
+        }
+
+        .dpad-btn {
+            background: #110d29;
+            border: 1px solid #7000ff;
+            color: #00f0ff;
+            font-size: 1.1em;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .dpad-btn:active {
+            background: #ff007f;
+            color: #fff;
+        }
+
+        /* PAINEL DE ALTERAÇÃO DE CHÃO */
+        .theme-panel {
+            display: none;
+            background: rgba(21, 17, 48, 0.9);
+            border: 1px solid #7000ff;
+            border-radius: 8px;
+            padding: 8px 15px;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeIn 0.3s forwards;
+            max-width: 160px;
+            margin-top: 10px;
+        }
+
+        .palette-list {
+            display: flex;
+            gap: 8px;
+        }
+
+        .palette-dot {
+            width: 22px;
+            height: 22px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s;
+            display: none;
+            /* Ativado via JS se desbloqueado */
+        }
+
+        .palette-dot:hover {
+            transform: scale(1.15);
+        }
+
+        .palette-dot.active {
+            border-color: #00f0ff;
+            box-shadow: 0 0 10px #00f0ff;
+        }
+
+        /* SHOPPING E SELEÇÃO DE ABAS */
+        .shop-tabs {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
             margin-bottom: 15px;
         }
+
         .tab-btn {
-            flex: 1;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid #7000ff;
             padding: 10px;
             color: #fff;
             cursor: pointer;
             border-radius: 8px;
-            font-weight: bold;
+            font-size: 0.7em;
             text-transform: uppercase;
-            font-size: 0.8em;
+            font-weight: bold;
+            text-align: center;
         }
+
         .tab-btn.active {
             background: #7000ff;
-            box-shadow: 0 0 10px rgba(112,0,255,0.5);
         }
+
         .shop-list {
             flex: 1;
             overflow-y: auto;
-            padding-right: 5px;
         }
+
         .shop-item {
-            background: rgba(0,0,0,0.25);
+            background: rgba(255, 255, 255, 0.02);
             border: 1px solid #333;
             border-radius: 10px;
-            padding: 12px;
+            padding: 10px;
             margin-bottom: 10px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
+
         .item-meta {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
+
         .badge {
-            font-size: 0.7em;
+            font-size: 0.65em;
             padding: 3px 6px;
             border-radius: 4px;
             font-weight: bold;
             text-transform: uppercase;
         }
-        .rarity-comum { color: #888; border: 1px solid #888; }
-        .rarity-incomum { color: #00aaff; border: 1px solid #00aaff; }
-        .rarity-rara { color: #aa00ff; border: 1px solid #aa00ff; }
-        .rarity-lendaria { color: #ffaa00; border: 1px solid #ffaa00; background: rgba(255, 170, 0, 0.1); }
-        
+
+        .rarity-comum {
+            color: #8b949e;
+            border: 1px solid #8b949e;
+        }
+
+        .rarity-incomum {
+            color: #58a6ff;
+            border: 1px solid #58a6ff;
+        }
+
+        .rarity-rara {
+            color: #bc8cff;
+            border: 1px solid #bc8cff;
+        }
+
+        .rarity-lendaria {
+            color: #ffb454;
+            border: 1px solid #ffb454;
+        }
+
         button.buy-btn {
             background: #7000ff;
             color: white;
@@ -158,117 +339,526 @@
             padding: 8px 14px;
             border-radius: 6px;
             cursor: pointer;
+            font-size: 0.9em;
             font-weight: bold;
         }
+
         button.buy-btn:disabled {
             background: #2a2a35;
             color: #666;
             cursor: not-allowed;
         }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         @keyframes float {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-8px); }
+            0% {
+                transform: translateY(0);
+            }
+
+            100% {
+                transform: translateY(-6px);
+            }
+        }
+
+        @keyframes pulse-select {
+            0% {
+                border-color: #ff007f;
+            }
+
+            100% {
+                border-color: #00f0ff;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="main-content">
-        <h2 style="margin: 0; color: #00f0ff;">💰 Saldo: <span id="coinBalance" style="color: #fff;">0</span> Moedas</h2>
-        
+        <div class="main-header">
+            <h2 style="margin: 0; color: #00f0ff; font-size: 1.6em;">💰 Saldo: <span id="coinBalance"
+                    style="color: #fff;">0</span> Moedas</h2>
+            <div class="header-actions">
+                <button class="main-btn" style="background:#110d29; border:1px solid #7000ff;"
+                    onclick="toggleThemePanel()">Pintar 🎨</button>
+            </div>
+        </div>
+
         <div class="isometric-container">
             <div class="room-base" id="roomBase">
-                <div class="wall-left"></div>
-                <div class="wall-right"></div>
+                <div class="wall-left" id="wallLeft"></div>
+                <div class="wall-right" id="wallRight"></div>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:15px; align-items:flex-start;">
+            <!-- Controles de Posicionamento (D-PAD) -->
+            <div class="movement-controls" id="movementPad">
+                <div style="font-size:0.75em; margin-right:12px; text-align:center;">
+                    <div style="font-weight:bold; color:#ff007f;">MOVER OBJETO</div>
+                    <div id="selectedItemName"
+                        style="color:#aaa; max-width:90px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                        Nenhum</div>
+                </div>
+                <div class="dpad-grid">
+                    <button class="dpad-btn" style="grid-column: 2;" onclick="moveItem('up')">▲</button>
+                    <button class="dpad-btn" style="grid-column: 1;" onclick="moveItem('left')">◀</button>
+                    <button class="dpad-btn" style="grid-column: 3;" onclick="moveItem('right')">▶</button>
+                    <button class="dpad-btn" style="grid-column: 2;" onclick="moveItem('down')">▼</button>
+                </div>
+                <!-- Controle de Elevação Vertical -->
+                <div style="display:flex; flex-direction:column; align-items:center; gap:2px; margin-left:15px;">
+                    <span style="font-size:0.65em; font-weight:bold; color:#00f0ff; letter-spacing:0.3px;">ALTURA</span>
+                    <input type="range" id="elevationSlider" min="-150" max="150" value="0" style="width:80px; height:4px; accent-color:#00f0ff; cursor:pointer;" oninput="adjustElevation(this.value)">
+                    <span id="elevationVal" style="font-size:0.65em; color:#aaa; font-family:monospace;">0px</span>
+                </div>
+                <button class="main-btn" style="padding:6px 12px; font-size:0.75em; margin-left:10px;"
+                    onclick="deselectItem()">OK</button>
+            </div>
+
+            <!-- Painel de Seleção de Temas de Cores Desbloqueáveis -->
+            <div class="theme-panel" id="themePanel">
+                <div
+                    style="display: flex; gap: 15px; align-items: center; width: 100%; justify-content: space-around; padding: 5px 0;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span
+                            style="font-size:0.75em; font-weight:bold; color:#dfb15b; letter-spacing: 0.5px;">PAREDE:</span>
+                        <input type="color" id="wallColorPicker" value="#8f745f" oninput="changeWallColor(this.value)"
+                            style="border: 1px solid #c38370; background: none; cursor: pointer; width: 32px; height: 24px; border-radius: 4px; padding: 0;">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span
+                            style="font-size:0.75em; font-weight:bold; color:#dfb15b; letter-spacing: 0.5px;">CHÃO:</span>
+                        <input type="color" id="floorColorPicker" value="#342764" oninput="changeFloorColor(this.value)"
+                            style="border: 1px solid #c38370; background: none; cursor: pointer; width: 32px; height: 24px; border-radius: 4px; padding: 0;">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="sidebar-shop">
-        <h3 style="margin-top: 0; color: #ff007f;">🛒 Loja de Decoração</h3>
-        <div class="shop-tabs">
-            <button class="tab-btn active" onclick="switchTab('moveis')">Móveis</button>
-            <button class="tab-btn" onclick="switchTab('eletronicos')">Aparelhos</button>
-            <button class="tab-btn" onclick="switchTab('decoracao')">Outros</button>
-        </div>
+        <h3 style="margin-top: 0; color: #c38370; font-size: 1.2em; display: flex; align-items: center; gap: 8px;">🎒
+            Mochila (Inventário)</h3>
         <div class="shop-list" id="shopList"></div>
     </div>
 
     <script>
-        const vscode = acquireVsCodeApi();
-        
+        let vscode;
+        try {
+            vscode = acquireVsCodeApi();
+        } catch (e) {
+            // Mock seguro para evitar travamento da execução de cliques e scripts fora do VS Code
+            vscode = {
+                postMessage: (msg) => {
+                    console.log("Mock postMessage:", msg);
+                    if (msg.command === 'ready') {
+                        window.postMessage({
+                            command: 'syncState',
+                            coins: 1329,
+                            inventory: ['chair', 'table', 'stool', 'window_night', 'door'],
+                            placed: ['window_night', 'door'],
+                            offsets: {},
+                            theme: 'yakuza',
+                            unlockedThemes: ['yakuza']
+                        }, '*');
+                    }
+                }
+            };
+        }
+
         // Injetado dinamicamente pelo backend
         /*CATALOG_PLACEHOLDER*/
 
-        let currentTab = 'moveis';
         let localCoins = 0;
         let localInventory = [];
+        let localPlaced = [];
+        let localOffsets = {};
+        let localTheme = 'yakuza';
+        let currentTab = 'moveis';
+        let selectedItemId = null;
+        let activeIntervals = []; // Guarda timers das animações de sprite
+
+        let woodTileUrl = "";
+        let grayTileUrl = "";
+        let localWallUrl = "";
+
+        const rarityColors = { comum: '#8b949e', incomum: '#58a6ff', rara: '#bc8cff', lendaria: '#ffb454' };
+
+        // Definição dos temas de cores e filtros CSS para as paredes verdes originais
+        const themes = {
+            yakuza: { tileType: 'wood', filter: 'none', wallColor: 'rgba(143, 116, 95, 0.85)', title: 'Tradicional' },
+            zen: { tileType: 'wood', filter: 'sepia(0.6) hue-rotate(20deg) brightness(1.15) saturate(0.65)', wallColor: 'rgba(130, 125, 90, 0.85)', title: 'Tatami Zen' },
+            cyber: { tileType: 'gray', filter: 'hue-rotate(145deg) saturate(1.7) brightness(0.75)', wallColor: 'rgba(40, 80, 100, 0.85)', title: 'Cyberpunk Neon' },
+            dusk: { tileType: 'gray', filter: 'hue-rotate(185deg) saturate(1.3) brightness(0.5)', wallColor: 'rgba(60, 45, 75, 0.85)', title: 'Crepúsculo' },
+            gold: { tileType: 'wood', filter: 'hue-rotate(45deg) saturate(1.9) brightness(1.05)', wallColor: 'rgba(160, 130, 60, 0.85)', title: 'Pachinko Gold' },
+            sakura: { tileType: 'wood', filter: 'hue-rotate(310deg) saturate(1.4) brightness(1.1) sepia(0.15)', wallColor: 'rgba(180, 120, 135, 0.85)', title: 'Sakura Kyoto' },
+            forest: { tileType: 'wood', filter: 'hue-rotate(85deg) saturate(1.2) brightness(0.85) sepia(0.2)', wallColor: 'rgba(80, 110, 80, 0.85)', title: 'Floresta de Cedros' },
+            coffee: { tileType: 'wood', filter: 'sepia(0.8) hue-rotate(-10deg) brightness(0.7) saturate(0.95)', wallColor: 'rgba(100, 80, 65, 0.85)', title: 'Grãos de Café' },
+            nordic: { tileType: 'gray', filter: 'grayscale(1) brightness(1.35) contrast(0.9)', wallColor: 'rgba(140, 140, 145, 0.85)', title: 'Nórdico Minimalista' }
+        };
+
+       function toggleThemePanel() {
+            const panel = document.getElementById('themePanel');
+            if (panel) {
+                const isHidden = !panel.style.display || panel.style.display === 'none';
+                panel.style.display = isHidden ? 'flex' : 'none';
+            }
+        }
+
+        function updateWallVisual(color) {
+            const wallLeft = document.getElementById('wallLeft');
+            const wallRight = document.getElementById('wallRight');
+            if (wallLeft && wallRight) {
+                wallLeft.style.backgroundImage = 'none';
+                wallRight.style.backgroundImage = 'none';
+                wallLeft.style.backgroundColor = color;
+                wallRight.style.backgroundColor = color;
+            }
+        }
+
+        function updateFloorVisual(color) {
+            const roomBase = document.getElementById('roomBase');
+            if (roomBase) {
+                roomBase.style.backgroundImage = 'none';
+                roomBase.style.backgroundColor = color;
+            }
+        }
+
+        function changeWallColor(color) {
+            updateWallVisual(color);
+            saveCustomColors();
+        }
+
+        function changeFloorColor(color) {
+            updateFloorVisual(color);
+            saveCustomColors();
+        }
+
+        function saveCustomColors() {
+            const wallColor = document.getElementById('wallColorPicker').value;
+            const floorColor = document.getElementById('floorColorPicker').value;
+            
+            vscode.postMessage({
+                command: 'saveTheme',
+                themeId: `custom|${wallColor}|${floorColor}`
+            });
+        }
+
+        // Localize o bloco 'case "syncState":' na escuta de mensagens e substitua a chamada de applyTheme por esta:
+
+        function toggleShop(open) {
+            const panel = document.getElementById('shopPanel');
+            if (open) panel.classList.add('open');
+            else panel.classList.remove('open');
+        }
 
         function switchTab(tab) {
             currentTab = tab;
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.remove('active');
-                if (btn.getAttribute('onclick').includes(tab)) btn.classList.add('active');
             });
-            renderShop();
+            document.getElementById('tab-' + tab).classList.add('active');
+            renderInventory();
         }
 
-        function renderShop() {
+        function renderInventory() {
             const list = document.getElementById('shopList');
             list.innerHTML = '';
 
-            Object.values(catalog)
-                .filter(item => item.category === currentTab)
-                .forEach(item => {
-                    const isOwned = localInventory.includes(item.id);
+            if (localInventory.length === 0) {
+                list.innerHTML = '<div style="text-align:center; padding: 40px 20px; color:#a28f80; font-size:0.9em;">Seu inventário está vazio.<br><br>Ganha decorações salvando seus arquivos de código no editor! 🎁</div>';
+                return;
+            }
+
+            localInventory.forEach(itemId => {
+                const item = catalog[itemId];
+                if (item) {
+                    const isPlaced = localPlaced.includes(itemId);
                     list.innerHTML += `
-                        <div class="shop-item">
+                        <div class="shop-item" style="border-color:#c78295;">
                             <div class="item-meta">
-                                <span style="font-size: 2.2em;">${item.emoji}</span>
+                                <div style="background:rgba(255,255,255,0.05); padding: 5px; border-radius: 4px; display:flex;">
+                                    <img src="${item.icon}" style="max-width:28px; max-height:28px;" />
+                                </div>
                                 <div>
-                                    <div style="font-weight:bold;">${item.name}</div>
+                                    <div style="font-weight:bold; font-size:0.85em;">${item.name}</div>
                                     <span class="badge rarity-${item.rarity}">${item.rarity}</span>
                                 </div>
                             </div>
-                            <button class="buy-btn" ${isOwned ? 'disabled' : ''} onclick="buy('${item.id}', ${item.cost})">
-                                ${isOwned ? 'Adquirido' : item.cost + ' 💰'}
+                            <button class="buy-btn" style="background:${isPlaced ? '#c78295' : '#8a9a86'}" onclick="togglePlacement('${item.id}')">
+                                ${isPlaced ? 'Guardar' : 'Colocar'}
                             </button>
                         </div>
                     `;
-                });
+                }
+            });
         }
 
         function buy(itemId, cost) {
             vscode.postMessage({ command: 'buyItem', itemId: itemId, cost: cost });
         }
 
+        function togglePlacement(itemId) {
+            if (itemId === selectedItemId) {
+                deselectItem();
+            }
+            vscode.postMessage({ command: 'togglePlacement', itemId: itemId });
+        }
+
+        function selectItem(itemId, name) {
+            selectedItemId = itemId;
+            document.querySelectorAll('.room-item').forEach(el => el.classList.remove('selected'));
+
+            const selectedEl = document.getElementById('item-' + itemId);
+            if (selectedEl) {
+                selectedEl.classList.add('selected');
+            }
+
+            document.getElementById('selectedItemName').innerText = name;
+            document.getElementById('movementPad').style.display = 'flex';
+        }
+
+        function deselectItem() {
+            selectedItemId = null;
+            document.querySelectorAll('.room-item').forEach(el => el.classList.remove('selected'));
+            document.getElementById('movementPad').style.display = 'none';
+        }
+
+
+        function applyPositionOffset(element, offset) {
+            // Posiciona a base do item na projeção isométrica do chão
+            element.style.marginTop = offset.y + 'px';
+            element.style.marginLeft = offset.x + 'px';
+            
+            // Move apenas o visual (sprite) para cima/baixo mantendo a sombra no chão
+            const visual = element.querySelector('.item-visual');
+            if (visual) {
+                const z = offset.z || 0;
+                visual.style.transform = `translateY(${z}px)`;
+            }
+        }
+
+        function selectItem(itemId, name) {
+            selectedItemId = itemId;
+            document.querySelectorAll('.room-item').forEach(el => el.classList.remove('selected'));
+
+            const selectedEl = document.getElementById('item-' + itemId);
+            if (selectedEl) {
+                selectedEl.classList.add('selected');
+            }
+
+            document.getElementById('selectedItemName').innerText = name;
+            document.getElementById('movementPad').style.display = 'flex';
+
+            // Sincroniza o slider de altura vertical
+            const offset = localOffsets[itemId] || { x: 0, y: 0, z: 0 };
+            const zVal = offset.z || 0;
+            const slider = document.getElementById('elevationSlider');
+            if (slider) {
+                slider.value = zVal;
+                document.getElementById('elevationVal').innerText = zVal + 'px';
+            }
+        }
+
+        function adjustElevation(value) {
+            if (!selectedItemId) return;
+            const offset = localOffsets[selectedItemId] || { x: 0, y: 0, z: 0 };
+            offset.z = parseInt(value) || 0;
+            localOffsets[selectedItemId] = offset;
+
+            const itemEl = document.getElementById('item-' + selectedItemId);
+            if (itemEl) {
+                applyPositionOffset(itemEl, offset);
+            }
+
+            document.getElementById('elevationVal').innerText = value + 'px';
+
+            vscode.postMessage({
+                command: 'saveOffset',
+                itemId: selectedItemId,
+                x: offset.x,
+                y: offset.y,
+                z: offset.z
+            });
+        }
+
+        function moveItem(direction) {
+            if (!selectedItemId) return;
+            const item = catalog[selectedItemId];
+            if (!item) return;
+
+            let offset = localOffsets[selectedItemId] || { x: 0, y: 0, z: 0 };
+            const step = 8;
+
+            let newX = offset.x;
+            let newY = offset.y;
+
+            switch (direction) {
+                case 'up': newY -= step; break;
+                case 'down': newY += step; break;
+                case 'left': newX -= step; break;
+                case 'right': newX += step; break;
+            }
+
+            let minX = -140, maxX = 140, minY = -120, maxY = 120;
+            if (item.placement === 'wall') {
+                minX = -150; maxX = 150; minY = -160; maxY = 90;
+            } else if (item.placement === 'desk') {
+                minX = -100; maxX = 100; minY = -100; maxY = 100;
+            }
+
+            offset.x = Math.max(minX, Math.min(maxX, newX));
+            offset.y = Math.max(minY, Math.min(maxY, newY));
+
+            localOffsets[selectedItemId] = offset;
+
+            const itemEl = document.getElementById('item-' + selectedItemId);
+            if (itemEl) {
+                applyPositionOffset(itemEl, offset);
+            }
+
+            vscode.postMessage({
+                command: 'saveOffset',
+                itemId: selectedItemId,
+                x: offset.x,
+                y: offset.y,
+                z: offset.z || 0
+            });
+        }
+
+        // GERENCIADOR DE ANIMAÇÃO DE SPRITES
+        function clearAllIntervals() {
+            activeIntervals.forEach(interval => clearInterval(interval));
+            activeIntervals = [];
+        }
+
+        function setupAnimation(imgElement, framesArray, speed) {
+            if (!framesArray || framesArray.length === 0) return;
+            let currentFrameIdx = 0;
+            const interval = setInterval(() => {
+                currentFrameIdx = (currentFrameIdx + 1) % framesArray.length;
+                imgElement.src = framesArray[currentFrameIdx];
+            }, speed);
+            activeIntervals.push(interval);
+        }
+
         window.addEventListener('message', event => {
             const data = event.data;
-            if (data.command === 'syncState') {
-                localCoins = data.coins;
-                localInventory = data.inventory;
-                
-                document.getElementById('coinBalance').innerText = localCoins;
-                renderShop();
+            switch (data.command) {
+                case 'syncState':
+                    localCoins = data.coins;
+                    localInventory = data.inventory;
+                    localPlaced = data.placed || [];
+                    localOffsets = data.offsets || {};
+                    localTheme = data.theme || 'yakuza';
+                    const unlockedThemes = data.unlockedThemes || ['yakuza'];
 
-                const room = document.getElementById('roomBase');
-                document.querySelectorAll('.room-item').forEach(el => el.remove());
+                    woodTileUrl = data.woodTileUri;
+                    grayTileUrl = data.grayTileUri;
+                    localWallUrl = data.wallUri;
 
-                localInventory.forEach(itemId => {
-                    const item = catalog[itemId];
-                    if (item) {
-                        const itemEl = document.createElement('div');
-                        itemEl.className = `room-item placement-${item.placement}`;
-                        itemEl.innerHTML = `
-                            <div class="item-visual" title="${item.name}">${item.emoji}</div>
-                            <div class="item-glow"></div>
-                        `;
-                        room.appendChild(itemEl);
+                    document.getElementById('coinBalance').innerText = localCoins;
+                    renderInventory();
+
+                    clearAllIntervals();
+
+                    // Sincroniza as paredes verdes originais de imagem
+                    document.getElementById('wallLeft').style.backgroundImage = 'url("' + data.wallUri + '")';
+                    document.getElementById('wallRight').style.backgroundImage = 'url("' + data.wallUri + '")';
+
+                    // Sincroniza o piso e as paredes sem disparar o salvamento redundante de mensagens
+                    if (localTheme && localTheme.startsWith('custom|')) {
+                        const parts = localTheme.split('|');
+                        const savedWall = parts[1];
+                        const savedFloor = parts[2];
+
+                        document.getElementById('wallColorPicker').value = savedWall;
+                        document.getElementById('floorColorPicker').value = savedFloor;
+
+                        updateWallVisual(savedWall);
+                        updateFloorVisual(savedFloor);
+                    } else {
+                        document.getElementById('wallColorPicker').value = '#8f745f';
+                        document.getElementById('floorColorPicker').value = '#342764';
+                        updateWallVisual('#8f745f');
+                        updateFloorVisual('#342764');
                     }
-                });
+
+                    document.querySelectorAll('.palette-dot').forEach(dot => {
+                        const themeId = dot.id.replace('dot-', '');
+                        if (unlockedThemes.includes(themeId)) {
+                            dot.style.display = 'block';
+                        } else {
+                            dot.style.display = 'none';
+                        }
+                    });
+
+                    const room = document.getElementById('roomBase');
+                    document.querySelectorAll('.room-item').forEach(el => el.remove());
+
+                    localPlaced.forEach(itemId => {
+                        const item = catalog[itemId];
+                        if (item) {
+                            const itemEl = document.createElement('div');
+                            itemEl.className = 'room-item placement-' + item.placement;
+                            itemEl.id = 'item-' + item.id;
+
+                            const offset = localOffsets[item.id] || { x: 0, y: 0 };
+                            applyPositionOffset(itemEl, offset);
+
+                            itemEl.innerHTML = `
+                                <div class="item-visual" title="${item.name}">
+                                    <img id="img-${item.id}" src="${item.icon}" style="filter: drop-shadow(0 0 4px ${rarityColors[item.rarity]}30);" />
+                                </div>
+                                <div class="item-glow" style="background: ${rarityColors[item.rarity]}40;"></div>
+                            `;
+
+                            itemEl.onclick = (e) => {
+                                e.stopPropagation();
+                                selectItem(item.id, item.name);
+                            };
+
+                            room.appendChild(itemEl);
+
+                            // Ativa as sequências de sprites das imagens pixel art animadas
+                            if (item.animationFrames && item.animation) {
+                                const imgEl = document.getElementById('img-' + item.id);
+                                setupAnimation(imgEl, item.animationFrames, item.animation.speed);
+                            }
+                        }
+                    });
+
+                    if (selectedItemId && !localPlaced.includes(selectedItemId)) {
+                        deselectItem();
+                    }
+                    break;
             }
         });
+
+        document.getElementById('roomBase').onclick = () => {
+            deselectItem();
+        };
 
         vscode.postMessage({ command: 'ready' });
     </script>
 </body>
+
 </html>
