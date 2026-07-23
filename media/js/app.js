@@ -18,6 +18,41 @@ let selectedItemId = null;
 let activeIntervals = [];
 let isSpinning = false;
 let currentReward = null;
+let localUnlockedThemes = ['yakuza'];
+let localThemeDefinitions = {};
+
+function renderThemes() {
+    const grid = document.getElementById('themesGrid');
+    if (!grid) {return;};
+    grid.innerHTML = '';
+
+    Object.values(localThemeDefinitions).forEach(t => {
+        const isUnlocked = localUnlockedThemes.includes(t.id);
+        const isActive = localTheme === t.id;
+        
+        const btn = document.createElement('button');
+        btn.className = `theme-btn ${isUnlocked ? 'unlocked' : 'locked'} ${isActive ? 'active' : ''}`;
+        btn.innerHTML = `${isUnlocked ? '' : '🔒 '}${t.name}`;
+        btn.title = isUnlocked ? `Aplicar tema ${t.name}` : `Tema Bloqueado! Desbloqueie no Cassino 🎰`;
+        
+        if (isUnlocked) {
+            btn.onclick = () => selectThemePreset(t);
+        }
+        grid.appendChild(btn);
+    });
+}
+
+function selectThemePreset(theme) {
+    applyWallVisual(theme.wallColor);
+    applyFloorVisual(theme.floorColor);
+    localTheme = theme.id;
+    renderThemes();
+    
+    vscode.postMessage({
+        command: 'saveTheme',
+        themeId: theme.id
+    });
+}
 
 const rarityColors = {
     comum: '#8b949e',
@@ -55,23 +90,48 @@ function closeRouletteModal() {
 }
 
 // --- PINTURA ---
-function applyWallVisual(color) {
+function applyWallVisual(color, textureUrl) {
     const wallLeft = document.getElementById('wallLeft');
     const wallRight = document.getElementById('wallRight');
     if (wallLeft && wallRight) {
-        wallLeft.style.backgroundImage = 'none';
-        wallRight.style.backgroundImage = 'none';
         wallLeft.style.backgroundColor = color;
         wallRight.style.backgroundColor = color;
+        
+        if (textureUrl) {
+            wallLeft.style.backgroundImage = `url("${textureUrl}")`;
+            wallRight.style.backgroundImage = `url("${textureUrl}")`;
+            wallLeft.style.backgroundRepeat = 'repeat';
+            wallRight.style.backgroundRepeat = 'repeat';
+        } else {
+            wallLeft.style.backgroundImage = 'none';
+            wallRight.style.backgroundImage = 'none';
+        }
     }
 }
 
-function applyFloorVisual(color) {
+function applyFloorVisual(color, textureUrl) {
     const roomBase = document.getElementById('roomBase');
     if (roomBase) {
-        roomBase.style.backgroundImage = 'none';
         roomBase.style.backgroundColor = color;
+        if (textureUrl) {
+            roomBase.style.backgroundImage = `url("${textureUrl}")`;
+            roomBase.style.backgroundRepeat = 'repeat';
+        } else {
+            roomBase.style.backgroundImage = 'none';
+        }
     }
+}
+
+function selectThemePreset(theme) {
+    applyWallVisual(theme.wallColor, theme.wallTexture);
+    applyFloorVisual(theme.floorColor, theme.floorTexture);
+    localTheme = theme.id;
+    renderThemes();
+
+    vscode.postMessage({
+        command: 'saveTheme',
+        themeId: theme.id
+    });
 }
 
 function changeWallColor(color) {
@@ -116,7 +176,7 @@ function renderInventory() {
                             <span class="badge" style="color:${rarityColors[item.rarity]}">${item.rarity.toUpperCase()}</span>
                         </div>
                     </div>
-                    <button class="btn btn-sm" style="background:${isPlaced ? 'var(--accent-rose)' : '#4a8258'}" onclick="togglePlacement('${item.id}')">
+                    <button class="btn btn-sm" style="background:${isPlaced ? '#d11313' : '#286b39'}" onclick="togglePlacement('${item.id}')">
                         ${isPlaced ? 'Guardar' : 'Colocar'}
                     </button>
                 </div>
@@ -165,7 +225,8 @@ function applyPositionOffset(element, offset) {
     element.style.marginLeft = offset.x + 'px';
     const visual = element.querySelector('.item-visual');
     if (visual) {
-        visual.style.transform = `translateY(${offset.z || 0}px)`;
+        // Subir a altura no isometrico = deslocar Y negativo
+        visual.style.transform = `translateY(${- (offset.z || 0)}px)`;
     }
 }
 
@@ -580,36 +641,32 @@ window.addEventListener('message', (event) => {
             localInventory = data.inventory || [];
             localPlaced = data.placed || [];
             localOffsets = data.offsets || {};
+            localUnlockedThemes = data.unlockedThemes || ['yakuza'];
+            localThemeDefinitions = data.themeDefinitions || {};
+            localTheme = data.theme || 'yakuza';
 
             document.getElementById('coinBalance').innerText = localCoins;
             renderInventory();
+            renderThemes();
             clearAllIntervals();
 
-            if (data.theme && data.theme.startsWith('custom|')) {
-                const parts = data.theme.split('|');
-                const savedWall = parts[1] || '#8f745f';
-                const savedFloor = parts[2] || '#342764';
-                document.getElementById('wallColorPicker').value = savedWall;
-                document.getElementById('floorColorPicker').value = savedFloor;
-                applyWallVisual(savedWall);
-                applyFloorVisual(savedFloor);
-            } else {
-                document.getElementById('wallColorPicker').value = '#8f745f';
-                document.getElementById('floorColorPicker').value = '#342764';
-                applyWallVisual('#8f745f');
-                applyFloorVisual('#342764');
+            // Aplica as cores do tema selecionado
+            const currentDef = localThemeDefinitions[localTheme] || localThemeDefinitions['yakuza'];
+            if (currentDef) {
+                applyWallVisual(currentDef.wallColor, currentDef.wallTexture);
+                applyFloorVisual(currentDef.floorColor, currentDef.floorTexture);
             }
 
-            if (data.wallUri) {
-                const wallLeft = document.getElementById('wallLeft');
-                const wallRight = document.getElementById('wallRight');
-                if (wallLeft && wallRight && (!data.theme || !data.theme.startsWith('custom|'))) {
-                    wallLeft.style.backgroundImage = `url("${data.wallUri}")`;
-                    wallRight.style.backgroundImage = `url("${data.wallUri}")`;
-                }
+            // Garante que nenhuma imagem de fundo seja aplicada sobre a parede
+            const wallLeft = document.getElementById('wallLeft');
+            const wallRight = document.getElementById('wallRight');
+            if (wallLeft && wallRight) {
+                wallLeft.style.backgroundImage = 'none';
+                wallRight.style.backgroundImage = 'none';
             }
 
-            const room = document.getElementById('roomBase');
+            // Desenha os móveis posicionados no quarto
+           const room = document.getElementById('roomBase');
             document.querySelectorAll('.room-item').forEach((el) => {
                 el.remove();
             });
@@ -621,15 +678,17 @@ window.addEventListener('message', (event) => {
                     itemEl.className = 'room-item placement-' + item.placement;
                     itemEl.id = 'item-' + item.id;
 
-                    const offset = localOffsets[item.id] || { x: 0, y: 0, z: 0 };
-                    applyPositionOffset(itemEl, offset);
-
+                    // 1º Injeta o HTML para criar o elemento .item-visual no DOM
                     itemEl.innerHTML = `
                         <div class="item-visual" title="${item.name}">
                             <img id="img-${item.id}" src="${item.icon}" />
                         </div>
                         <div class="item-glow"></div>
                     `;
+
+                    // 2º Agora aplica o offset e a altura (que encontra o .item-visual)
+                    const offset = localOffsets[item.id] || { x: 0, y: 0, z: 0 };
+                    applyPositionOffset(itemEl, offset);
 
                     itemEl.onclick = (e) => {
                         e.stopPropagation();
@@ -653,12 +712,18 @@ window.addEventListener('message', (event) => {
             document.getElementById('slot2').innerText = data.symbols[1];
             document.getElementById('slot3').innerText = data.symbols[2];
 
+            let statusText = '';
             if (data.rewardItem) {
-                document.getElementById('slotStatus').innerHTML = `🎉 JACKPOT! Ganhou: <strong style="color:var(--accent-gold);">${data.rewardItem.name}</strong>!`;
-                launchConfetti();
-            } else {
-                document.getElementById('slotStatus').innerHTML = `Recompensa: <strong style="color:var(--accent-gold);">+${data.rewardCoins} moedas</strong>.`;
+                statusText += `🎉 Ganhou: <strong style="color:var(--accent-gold);">${data.rewardItem.name}</strong>! `;
             }
+            if (data.rewardTheme) {
+                statusText += `🎨 TEMA LIBERADO: <strong style="color:var(--accent-cyan);">${data.rewardTheme.name}</strong>! `;
+                launchConfetti();
+            } else if (!data.rewardItem) {
+                statusText += `Recompensa: <strong style="color:var(--accent-gold);">+${data.rewardCoins} moedas</strong>.`;
+            }
+
+            document.getElementById('slotStatus').innerHTML = statusText;
             break;
 
         case 'triggerChest':

@@ -5,6 +5,178 @@ import { ITEM_CATALOG, Item, Offset, Rarity } from './items';
 
 const documentCharTracker = new Map<string, number>();
 
+export interface ThemeDefinition {
+    id: string;
+    name: string;
+    wallColor: string;
+    floorColor: string;
+    wallTexture: string;
+    floorTexture: string;
+}
+
+export const THEME_DEFINITIONS: Record<string, ThemeDefinition> = {
+    'yakuza': {
+        id: 'yakuza',
+        name: 'Yakuza',
+        wallColor: '#6e1f1f',
+        floorColor: '#1a1414',
+        wallTexture: 'https://www.transparenttextures.com/patterns/az-subtle.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/dark-wood.png'
+    },
+    'cyber': {
+        id: 'cyber',
+        name: 'Cyberpunk',
+        wallColor: '#120224',
+        floorColor: '#091321',
+        wallTexture: 'https://www.transparenttextures.com/patterns/hexabump.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/gplay.png'
+    },
+    'gold': {
+        id: 'gold',
+        name: 'Ouro Real',
+        wallColor: '#3a2800',
+        floorColor: '#1c150b',
+        wallTexture: 'https://www.transparenttextures.com/patterns/diamond-upholstery.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/moulin.png'
+    },
+    'zen': {
+        id: 'zen',
+        name: 'Zen Tatami',
+        wallColor: '#425244',
+        floorColor: '#2b2118',
+        wallTexture: 'https://www.transparenttextures.com/patterns/crisp-paper-ruffles.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/black-linen.png'
+    },
+    'dusk': {
+        id: 'dusk',
+        name: 'Crepúsculo',
+        wallColor: '#2b1a30',
+        floorColor: '#161021',
+        wallTexture: 'https://www.transparenttextures.com/patterns/pineapple-cut.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/batthern.png'
+    },
+    'sakura': {
+        id: 'sakura',
+        name: 'Jardim Sakura',
+        wallColor: '#7a4251',
+        floorColor: '#362128',
+        wallTexture: 'https://www.transparenttextures.com/patterns/az-subtle.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/light-wool.png'
+    },
+    'forest': {
+        id: 'forest',
+        name: 'Taverna Florestal',
+        wallColor: '#2b211a',
+        floorColor: '#162418',
+        wallTexture: 'https://www.transparenttextures.com/patterns/brick-wall-dark.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/dark-wood.png'
+    },
+    'coffee': {
+        id: 'coffee',
+        name: 'Café Vintage',
+        wallColor: '#473223',
+        floorColor: '#21150e',
+        wallTexture: 'https://www.transparenttextures.com/patterns/cartographer.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/dark-wood.png'
+    },
+    'nordic': {
+        id: 'nordic',
+        name: 'Sótão Nórdico',
+        wallColor: '#35434d',
+        floorColor: '#1c2226',
+        wallTexture: 'https://www.transparenttextures.com/patterns/connected.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/fabric-1-dark.png'
+    },
+    'arcade': {
+        id: 'arcade',
+        name: 'Retrô Arcade',
+        wallColor: '#281338',
+        floorColor: '#130f26',
+        wallTexture: 'https://www.transparenttextures.com/patterns/diagmonds.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/argyle.png'
+    },
+    'dungeon': {
+        id: 'dungeon',
+        name: 'Masmorra Escura',
+        wallColor: '#1e1e24',
+        floorColor: '#0f0f12',
+        wallTexture: 'https://www.transparenttextures.com/patterns/brick-wall-dark.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/black-mamba.png'
+    },
+    'palace': {
+        id: 'palace',
+        name: 'Palácio Real',
+        wallColor: '#1a233a',
+        floorColor: '#2c2214',
+        wallTexture: 'https://www.transparenttextures.com/patterns/black-thread-light.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/diamond-upholstery.png'
+    },
+    'steampunk': {
+        id: 'steampunk',
+        name: 'Steampunk',
+        wallColor: '#52341b',
+        floorColor: '#211710',
+        wallTexture: 'https://www.transparenttextures.com/patterns/cartographer.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/hexabump.png'
+    },
+    'cozy': {
+        id: 'cozy',
+        name: 'Quarto Aconchegante',
+        wallColor: '#5c4538',
+        floorColor: '#3b2f28',
+        wallTexture: 'https://www.transparenttextures.com/patterns/black-linen.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/light-wool.png'
+    },
+    'neon_tokyo': {
+        id: 'neon_tokyo',
+        name: 'Tóquio Neon',
+        wallColor: '#3d0c2e',
+        floorColor: '#081c24',
+        wallTexture: 'https://www.transparenttextures.com/patterns/black-thread.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/gplay.png'
+    },
+    'gothic': {
+        id: 'gothic',
+        name: 'Mansão Gótica',
+        wallColor: '#3d0f19',
+        floorColor: '#141113',
+        wallTexture: 'https://www.transparenttextures.com/patterns/moulin.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/black-linen.png'
+    },
+    'industrial': {
+        id: 'industrial',
+        name: 'Loft Industrial',
+        wallColor: '#363636',
+        floorColor: '#1c1c1c',
+        wallTexture: 'https://www.transparenttextures.com/patterns/crisp-paper-ruffles.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/connected.png'
+    },
+    'cabin': {
+        id: 'cabin',
+        name: 'Cabana Rústica',
+        wallColor: '#382519',
+        floorColor: '#241a14',
+        wallTexture: 'https://www.transparenttextures.com/patterns/dark-wood.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/light-wool.png'
+    },
+    'space': {
+        id: 'space',
+        name: 'Estação Espacial',
+        wallColor: '#111326',
+        floorColor: '#0b0c17',
+        wallTexture: 'https://www.transparenttextures.com/patterns/argyle.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/batthern.png'
+    },
+    'emerald': {
+        id: 'emerald',
+        name: 'Santuário Esmeralda',
+        wallColor: '#0d3822',
+        floorColor: '#091f14',
+        wallTexture: 'https://www.transparenttextures.com/patterns/pineapple-cut.png',
+        floorTexture: 'https://www.transparenttextures.com/patterns/black-mamba.png'
+    }
+};
+
 export function activate(context: vscode.ExtensionContext) {
     console.log('Kaiji Decor Ativa!');
 
@@ -128,7 +300,12 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
                     return;
                 case 'saveOffset':
                     if (message.itemId && message.x !== undefined) {
-                        this.saveItemOffset(message.itemId, message.x, message.y, message.z || 0);
+                        this.saveItemOffset(
+                            message.itemId,
+                            message.x,
+                            message.y ?? 0,
+                            message.z ?? 0
+                        );
                     }
                     return;
                 case 'saveTheme':
@@ -244,6 +421,7 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
             winType = 'loss';
         }
 
+
         const symbolsList = ['🍒', '💰', '💎', '⭐', '🎁', '🎰', '💣'];
         let s1 = '';
         let s2 = '';
@@ -303,6 +481,23 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
             this.addCoins(rewardCoins);
         }
 
+        let rewardTheme: ThemeDefinition | null = null;
+
+        // Se tirar Jackpot ou Caixa, tem 40% de chance de liberar um tema novo além do item:
+        if ((winType === 'jackpot' || winType === 'box') && Math.random() < 0.4) {
+            rewardTheme = this.unlockRandomTheme();
+        }
+
+        this._view?.webview.postMessage({
+            command: 'slotMachineResult',
+            success: true,
+            symbols: [s1, s2, s3],
+            rewardCoins: rewardCoins,
+            rewardItem: wonItem,
+            rewardTheme: rewardTheme,
+            newCoins: this.getCoins()
+        });
+
         this._view?.webview.postMessage({
             command: 'slotMachineResult',
             success: true,
@@ -315,6 +510,21 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
         this.updateState();
     }
 
+    public getUnlockedThemes(): string[] {
+        return this._context.globalState.get<string[]>('decor-unlocked-themes', ['yakuza']);
+    }
+
+    public unlockRandomTheme(): ThemeDefinition | null {
+        const unlocked = this.getUnlockedThemes();
+        const locked = Object.keys(THEME_DEFINITIONS).filter(id => !unlocked.includes(id));
+        if (locked.length === 0) { return null; }
+
+        const randomThemeId = locked[Math.floor(Math.random() * locked.length)];
+        unlocked.push(randomThemeId);
+        this._context.globalState.update('decor-unlocked-themes', unlocked);
+        return THEME_DEFINITIONS[randomThemeId];
+    }
+
     public updateState(): void {
         if (this._view) {
             const wallUri = getWebviewUri(this._context, this._view.webview, 'icons/Wall Green plain.png');
@@ -325,6 +535,8 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
                 placed: this.getPlaced(),
                 offsets: this.getOffsets(),
                 theme: this.getTheme(),
+                unlockedThemes: this.getUnlockedThemes(),
+                themeDefinitions: THEME_DEFINITIONS,
                 wallUri: wallUri
             });
         }
