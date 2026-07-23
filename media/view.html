@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Espaço - Kaiji Decor</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- CSS Injetado Dinamicamente pelo VS Code -->
+    <link rel="stylesheet" href="/*STYLES_URI*/">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- HEADER PRINCIPAL -->
+        <header class="main-header">
+            <div class="coins-badge">
+                💰 <span id="coinBalance">0</span>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="togglePanel('themePanel')">Pintar 🎨</button>
+                <button class="btn btn-casino" onclick="toggleSlotMachine(true)">🎰 Cassino</button>
+                <button class="btn btn-primary" onclick="toggleShop(true)">Mochila 🎒</button>
+            </div>
+        </header>
+
+        <!-- PAINEL DE CORES (PAREDE E CHÃO) -->
+        <div class="color-panel" id="themePanel">
+            <div class="color-picker-group">
+                <label>PAREDE:</label>
+                <input type="color" id="wallColorPicker" value="#8f745f" oninput="changeWallColor(this.value)">
+            </div>
+            <div class="color-picker-group">
+                <label>CHÃO:</label>
+                <input type="color" id="floorColorPicker" value="#342764" oninput="changeFloorColor(this.value)">
+            </div>
+        </div>
+
+        <!-- AMBIENTE ISOMÉTRICO -->
+        <div class="isometric-viewport">
+            <div class="room-base" id="roomBase">
+                <div class="wall-left" id="wallLeft"></div>
+                <div class="wall-right" id="wallRight"></div>
+            </div>
+        </div>
+
+        <!-- CONTROLES D-PAD DE POSICIONAMENTO E ELEVAÇÃO -->
+        <div class="movement-controls" id="movementPad">
+            <div class="item-info">
+                <span class="label">MOVER</span>
+                <span id="selectedItemName" class="item-name">Nenhum</span>
+            </div>
+            <div class="dpad-grid">
+                <button class="dpad-btn" style="grid-column: 2;" onclick="moveItem('up')">▲</button>
+                <button class="dpad-btn" style="grid-column: 1;" onclick="moveItem('left')">◀</button>
+                <button class="dpad-btn" style="grid-column: 3;" onclick="moveItem('right')">▶</button>
+                <button class="dpad-btn" style="grid-column: 2;" onclick="moveItem('down')">▼</button>
+            </div>
+            <div class="elevation-control">
+                <span class="label">ALTURA</span>
+                <input type="range" id="elevationSlider" min="-150" max="150" value="0" oninput="adjustElevation(this.value)">
+                <span id="elevationVal" class="val-text">0px</span>
+            </div>
+            <button class="btn btn-sm" onclick="deselectItem()">OK</button>
+        </div>
+
+        <!-- MOCHILA / INVENTÁRIO (SLIDE OVER) -->
+        <div class="drawer-panel" id="shopPanel">
+            <div class="drawer-header">
+                <h3>🎒 Mochila (Inventário)</h3>
+                <button class="btn btn-sm" onclick="toggleShop(false)">Fechar</button>
+            </div>
+            <div class="shop-list" id="shopList"></div>
+        </div>
+
+        <!-- CASSINO TEIAI (SLOT MACHINE) -->
+        <div class="drawer-panel casino-theme" id="slotPanel">
+            <div class="drawer-header">
+                <h3>🎰 Cassino Teiai</h3>
+                <button class="btn btn-sm" onclick="toggleSlotMachine(false)">Fechar</button>
+            </div>
+            
+            <div class="casino-layout">
+                <!-- ÁREA PRINCIPAL DO CAÇA-NÍQUEL (ESQUERDA) -->
+                <div class="casino-main">
+                    <p class="casino-desc">
+                        Gire por <strong class="gold-text">2.000 💰</strong>.<br>
+                        Alinhe <strong class="purple-text">🎰 🎰 🎰</strong> ou <strong class="gold-text">🎁 🎁 🎁</strong> para obter móveis!
+                    </p>
+                    <div class="slot-reels">
+                        <div id="slot1" class="reel">🍒</div>
+                        <div id="slot2" class="reel">💰</div>
+                        <div id="slot3" class="reel">💎</div>
+                    </div>
+                    <button id="spinBtn" class="btn btn-casino-spin" onclick="spinSlots()">GIRAR 🎰</button>
+                    <div id="slotStatus" class="casino-status">Insira 2.000 moedas para começar.</div>
+                </div>
+
+                <!-- TABELA DE PROBABILIDADES SEMPRE ABERTA NA DIREITA -->
+                <div class="paytable-container">
+                    <h4>📊 Tabela de Prêmios</h4>
+                    <div class="paytable-grid">
+                        <div class="paytable-row rarity-lendaria">
+                            <span class="paytable-symbols">🎰 🎰 🎰</span>
+                            <span class="paytable-prize">Decor Rara/Lendária</span>
+                            <span class="paytable-chance">2%</span>
+                        </div>
+                        <div class="paytable-row rarity-rara">
+                            <span class="paytable-symbols">🎁 🎁 🎁</span>
+                            <span class="paytable-prize">Decor Comum/Incomum</span>
+                            <span class="paytable-chance">5%</span>
+                        </div>
+                        <div class="paytable-row rarity-incomum">
+                            <span class="paytable-symbols">⭐ ⭐ ⭐</span>
+                            <span class="paytable-prize">+5.000 💰 Moedas</span>
+                            <span class="paytable-chance">10%</span>
+                        </div>
+                        <div class="paytable-row rarity-incomum">
+                            <span class="paytable-symbols">💎 💎 💎</span>
+                            <span class="paytable-prize">+3.000 💰 Moedas</span>
+                            <span class="paytable-chance">15%</span>
+                        </div>
+                        <div class="paytable-row rarity-comum">
+                            <span class="paytable-symbols">💰 💰 💰</span>
+                            <span class="paytable-prize">+1.500 💰 Moedas</span>
+                            <span class="paytable-chance">23%</span>
+                        </div>
+                        <div class="paytable-row rarity-comum">
+                            <span class="paytable-symbols">🍒 🍒 🍒</span>
+                            <span class="paytable-prize">+500 💰 Moedas</span>
+                            <span class="paytable-chance">25%</span>
+                        </div>
+                        <div class="paytable-row">
+                            <span class="paytable-symbols">💣 / Misto</span>
+                            <span class="paytable-prize">+50~100 💰 Consolação</span>
+                            <span class="paytable-chance">20%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GACHA / ROLETA REDONDA DE RECOMPENSAS AO SALVAR CÓDIGO -->
+        <div class="modal-overlay" id="chestOverlay">
+            <div class="wheel-modal-container" id="rouletteWrapper">
+                <button class="btn-close-modal" onclick="closeRouletteModal()" title="Fechar">✕</button>
+                <div class="wheel-header">
+                    <h2 class="wheel-title" id="rouletteHeader">SORTEANDO RECOMPENSA</h2>
+                    <p class="wheel-subtitle" id="rouletteSubheader">CÓDIGO SALVO COM SUCESSO</p>
+                </div>
+                
+                <div class="wheel-viewport">
+                    <div class="wheel-pointer"></div>
+                    <canvas id="wheelCanvas" width="280" height="280"></canvas>
+                </div>
+            </div>
+
+            <div class="gacha-result-container" id="gachaResultContainer">
+                <h2 id="resultTitle" class="result-title">RECOMPENSA CONQUISTADA</h2>
+                <div id="rewardReveal" class="reward-reveal">
+                    <div id="rewardCard" class="reward-box"></div>
+                    <button class="btn btn-primary btn-claim" onclick="claimRewards()">RESGATAR PRÊMIO</button>
+                </div>
+            </div>
+            
+            <!-- Canvas para efeito de confetes reluzentes -->
+            <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
+        </div>
+    </div>
+
+    <!-- Script de dados e lógica da webview -->
+    <script>
+        /*CATALOG_PLACEHOLDER*/
+    </script>
+    <script src="/*APP_JS_URI*/"></script>
+</body>
+
+</html>
