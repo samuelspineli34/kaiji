@@ -446,12 +446,14 @@ body {
     line-height: 1.35;
 }
 
-/* GABINETE DA MÁQUINA DE CASSINO TEIAI */
+/* GAP NA DIREITA PARA A ALAVANCA GIRAR LIVREMENTE */
 .slot-machine-wrapper {
     display: flex;
     align-items: center;
+    justify-content: center;
     position: relative;
     margin: 8px 0;
+    padding-right: 45px; /* Espaço para a alavanca descer sem ser cortada */
 }
 
 .machine-body {
@@ -508,27 +510,39 @@ body {
 .reels-wrapper::before { top: -10px; left: 50%; transform: translateX(-50%); }
 .reels-wrapper::after { bottom: -10px; left: 50%; transform: translateX(-50%); }
 
+/* JANELA DO ROLO COM CORTE FÍSICO DE EMOJIS (OVERFLOW HIDDEN) */
 .reel-window {
     flex: 1;
-    height: 52px;
-    background: linear-gradient(180deg, #110814 0%, #2b1236 50%, #110814 100%);
+    height: 56px;
+    background: linear-gradient(180deg, #09030c 0%, #2a1135 50%, #09030c 100%);
     border-radius: 8px;
     border: 1px solid rgba(223, 177, 91, 0.6);
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
-    box-shadow: inset 0 6px 8px rgba(0, 0, 0, 0.7), inset 0 -6px 8px rgba(0, 0, 0, 0.7);
+    overflow: hidden; /* Corta os emojis no topo/base dando o efeito de rolo físico */
+    box-shadow: inset 0 8px 10px rgba(0, 0, 0, 0.95), inset 0 -8px 10px rgba(0, 0, 0, 0.95);
+    position: relative;
 }
 
 .reel {
-    font-size: 2em;
+    font-size: 2.1em;
     user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+/* ANIMAÇÃO DE ROLAR VERTICALMENTE COM EMOJIS CORTADOS */
 .reel.spinning {
-    animation: reelUltraSpin 0.08s infinite linear;
+    animation: reelRollDown 0.08s infinite linear;
+}
+
+@keyframes reelRollDown {
+    0% { transform: translateY(-100%); filter: blur(3px); opacity: 0.7; }
+    50% { transform: translateY(0%); filter: blur(4px); opacity: 1; }
+    100% { transform: translateY(100%); filter: blur(3px); opacity: 0.7; }
 }
 
 .reel.win-pop {

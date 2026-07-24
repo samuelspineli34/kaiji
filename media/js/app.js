@@ -670,6 +670,8 @@ function launchConfetti() {
 }
 
 // --- CASSINO (SLOTS ULTRA ANIMADO) ---
+let reelIntervals = [];
+
 function spinSlots() {
     if (isSpinning) {
         return;
@@ -681,85 +683,95 @@ function spinSlots() {
 
     isSpinning = true;
 
-    // Dispara a animação da alavanca lateral descendo e subindo
+    // Dispara animação da alavanca
     const lever = document.getElementById('slotLever');
     if (lever) {
         lever.classList.add('pulled');
-        setTimeout(() => {
-            lever.classList.remove('pulled');
-        }, 400);
+        setTimeout(() => lever.classList.remove('pulled'), 400);
     }
 
     document.getElementById('slotStatus').innerText = "Boa sorte...";
 
+    // Limpa intervalos antigos caso existam
+    reelIntervals.forEach(clearInterval);
+    reelIntervals = [];
+
     const reels = [document.getElementById('slot1'), document.getElementById('slot2'), document.getElementById('slot3')];
-    reels.forEach((r) => {
+    const symbolsList = ['🍒', '💰', '💎', '⭐', '🎁', '🎰', '💣'];
+
+    // Inicia rotação contínua nos 3 rolos
+    reels.forEach((r, idx) => {
         if (r) {
             r.classList.add('spinning');
+            const interval = setInterval(() => {
+                r.innerText = symbolsList[Math.floor(Math.random() * symbolsList.length)];
+            }, 70);
+            reelIntervals.push(interval);
         }
     });
 
-    let count = 0;
-    const symbolsList = ['🍒', '💰', '💎', '⭐', '🎁', '🎰', '💣'];
-    const interval = setInterval(() => {
-        reels.forEach((r) => {
-            if (r) {
-                r.innerText = symbolsList[Math.floor(Math.random() * symbolsList.length)];
+    // Envia solicitação de sorteio ao servidor
+    vscode.postMessage({ command: 'spinSlotMachine' });
+}
+
+// RECEBE O RESULTADO E PARA OS ROLOS UM POR UM (PARADA SEQUENCIAL DE CASSINO)
+function handleSlotResult(data) {
+    const reels = [
+        document.getElementById('slot1'),
+        document.getElementById('slot2'),
+        document.getElementById('slot3')
+    ];
+
+    const finalSymbols = data.symbols;
+    const stopDelays = [400, 1100, 1900]; // Parada com intervalo de suspense entre cada rolo!
+
+    reels.forEach((reel, index) => {
+        setTimeout(() => {
+            // Para o rolo individual
+            if (reelIntervals[index]) {
+                clearInterval(reelIntervals[index]);
             }
-        });
-        count++;
-        if (count > 15) {
-            clearInterval(interval);
-            reels.forEach((r) => {
-                if (r) {
-                    r.classList.remove('spinning');
+            if (reel) {
+                reel.classList.remove('spinning');
+                reel.innerText = finalSymbols[index];
+                
+                // Animação de encaixe/trava do rolo
+                reel.classList.add('win-pop');
+                setTimeout(() => reel.classList.remove('win-pop'), 500);
+            }
+
+            // Quando o último rolo parar, revela a mensagem e prêmios!
+            if (index === reels.length - 1) {
+                isSpinning = false;
+                let statusText = '';
+
+                if (data.rewardItem) {
+                    statusText += `🎉 GANHOU: <strong style="color:var(--accent-gold); text-shadow:0 0 10px #dfb15b;">${data.rewardItem.name}</strong>! `;
+                    launchConfetti();
                 }
-            });
-            vscode.postMessage({ command: 'spinSlotMachine' });
-        }
-    }, 100);
+                if (data.rewardTheme) {
+                    statusText += `🎨 TEMA LIBERADO: <strong style="color:var(--accent-cyan); text-shadow:0 0 10px #00f0ff;">${data.rewardTheme.name}</strong>! `;
+                    launchConfetti();
+                } else if (!data.rewardItem) {
+                    if (data.rewardCoins > 0) {
+                        statusText += `Recompensa: <strong style="color:var(--accent-gold);">+${data.rewardCoins} moedas</strong>.`;
+                    } else if (data.rewardCoins < 0) {
+                        statusText += `Recompensa: <strong style="color:#ff4d4d;">${data.rewardCoins} moedas</strong>.`;
+                    }
+                }
+
+                document.getElementById('slotStatus').innerHTML = statusText;
+            }
+        }, stopDelays[index]);
+    });
 }
 
 // CORREÇÃO DA MENSAGEM DE RESULTADO (Resolve o bug do "+-100"):
 window.addEventListener('message', (event) => {
     const data = event.data;
     switch (data.command) {
-        case 'slotMachineResult':
-            isSpinning = false;
-
-            const r1 = document.getElementById('slot1');
-            const r2 = document.getElementById('slot2');
-            const r3 = document.getElementById('slot3');
-
-            r1.innerText = data.symbols[0];
-            r2.innerText = data.symbols[1];
-            r3.innerText = data.symbols[2];
-
-            // Animação de pop e pulso nos rolos
-            [r1, r2, r3].forEach((r, idx) => {
-                setTimeout(() => {
-                    r.classList.add('win-pop');
-                    setTimeout(() => r.classList.remove('win-pop'), 600);
-                }, idx * 120);
-            });
-
-            let statusText = '';
-            if (data.rewardItem) {
-                statusText += `🎉 GANHOU: <strong style="color:var(--accent-gold); text-shadow:0 0 10px #dfb15b;">${data.rewardItem.name}</strong>! `;
-                launchConfetti();
-            }
-            if (data.rewardTheme) {
-                statusText += `🎨 TEMA LIBERADO: <strong style="color:var(--accent-cyan); text-shadow:0 0 10px #00f0ff;">${data.rewardTheme.name}</strong>! `;
-                launchConfetti();
-            } else if (!data.rewardItem) {
-                if (data.rewardCoins > 0) {
-                    statusText += `Recompensa: <strong style="color:var(--accent-gold);">+${data.rewardCoins} moedas</strong>.`;
-                } else if (data.rewardCoins < 0) {
-                    statusText += `Recompensa: <strong style="color:#ff4d4d;">${data.rewardCoins} moedas</strong>.`;
-                }
-            }
-
-            document.getElementById('slotStatus').innerHTML = statusText;
+         case 'slotMachineResult':
+            handleSlotResult(data);
             break;
     }
 });
