@@ -10,6 +10,142 @@ try {
     };
 }
 
+// --- SISTEMA DE ÁUDIO SINTETIZADO (WEB AUDIO API) ---
+const AudioSynth = {
+    ctx: null,
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    },
+    playLever() {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.2);
+    },
+    playTick() {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(750, this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.04);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.04);
+    },
+    playStop() {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+        osc.frequency.setValueAtTime(90, this.ctx.currentTime + 0.06);
+        gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.15);
+    },
+    playWin() {
+        this.init();
+        const now = this.ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+            gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.08 + 0.25);
+            osc.start(now + idx * 0.08);
+            osc.stop(now + idx * 0.08 + 0.28);
+        });
+    },
+    playJackpot() {
+        this.init();
+        const now = this.ctx.currentTime;
+        const chords = [
+            [523.25, 659.25, 783.99],
+            [587.33, 739.99, 880.00],
+            [659.25, 830.61, 987.77],
+            [1046.50, 1318.51, 1567.98]
+        ];
+        chords.forEach((chord, chordIdx) => {
+            chord.forEach((freq) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(freq, now + chordIdx * 0.12);
+                gain.gain.setValueAtTime(0.12, now + chordIdx * 0.12);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + chordIdx * 0.12 + 0.35);
+                osc.start(now + chordIdx * 0.12);
+                osc.stop(now + chordIdx * 0.12 + 0.4);
+            });
+        });
+    },
+    playLoss() {
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(280, now);
+        osc.frequency.linearRampToValueAtTime(90, now + 0.65);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.65);
+        osc.start();
+        osc.stop(now + 0.65);
+    },
+    playCoin() {
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(987.77, now);
+        osc.frequency.setValueAtTime(1318.51, now + 0.08);
+        gain.gain.setValueAtTime(0.22, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        osc.start();
+        osc.stop(now + 0.4);
+    },
+    playBuzzer() {
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(100, now);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+        osc.start();
+        osc.stop(now + 0.35);
+    }
+};
+
 let localCoins = 0;
 let localInventory = [];
 let localPlaced = [];
@@ -18,6 +154,156 @@ let selectedItemId = null;
 let activeIntervals = [];
 let isSpinning = false;
 let currentReward = null;
+let localUnlockedThemes = ['yakuza'];
+let localThemeDefinitions = {};
+// --- SISTEMA DE CONQUISTAS (CLIENT-SIDE) ---
+let localAchievements = [];
+let localUnlockedAchievements = [];
+let localStats = {};
+let currentAchievementFilter = 'all';
+
+window.toggleAchievements = function(open) {
+    const panel = document.getElementById('achievementsPanel');
+    if (panel) {
+        if (open) {
+            renderAchievements();
+        }
+        panel.classList.toggle('open', Boolean(open));
+    }
+};
+
+window.filterAchievements = function(filter, btn) {
+    currentAchievementFilter = filter;
+    document.querySelectorAll('.achievements-filter .filter-btn').forEach((b) => {
+        b.classList.remove('active');
+    });
+    if (btn) {
+        btn.classList.add('active');
+    }
+    renderAchievements();
+};
+
+function getAchievementProgress(ach) {
+    const inv = localInventory || [];
+    const placed = localPlaced || [];
+    const themes = localUnlockedThemes || [];
+
+    let val = 0;
+    switch (ach.category) {
+        case 'colecao':
+            val = inv.length;
+            break;
+        case 'roleta':
+            val = localStats.rouletteSpins || 0;
+            break;
+        case 'cassino':
+            val = localStats.slotSpins || 0;
+            break;
+        case 'jackpot':
+            val = localStats.jackpots || 0;
+            break;
+        case 'riqueza':
+            val = localStats.coinsEarned || 0;
+            break;
+        case 'decoracao':
+            val = placed.length;
+            break;
+        case 'temas':
+            val = themes.length;
+            break;
+        case 'raridade': {
+            const targetRarity = ach.id.replace('rarity_', '').split('_')[0];
+            val = inv.filter((id) => {
+                const item = typeof catalog !== 'undefined' ? catalog[id] : null;
+                return item && item.rarity === targetRarity;
+            }).length;
+            break;
+        }
+    }
+    return val;
+}
+
+function renderAchievements() {
+    const list = document.getElementById('achievementsList');
+    const summary = document.getElementById('achievementsSummary');
+    if (!list) {
+        return;
+    }
+
+    list.innerHTML = '';
+    const unlockedSet = new Set(localUnlockedAchievements || []);
+
+    if (summary) {
+        summary.innerText = `${unlockedSet.size}/${localAchievements.length}`;
+    }
+
+    const filtered = (localAchievements || []).filter((ach) => {
+        const isDone = unlockedSet.has(ach.id);
+        if (currentAchievementFilter === 'completed') { return isDone; }
+        if (currentAchievementFilter === 'in_progress') { return !isDone; }
+        return true;
+    });
+
+    if (filtered.length === 0) {
+        list.innerHTML = '<div style="text-align:center; padding: 30px; color: #a28f80; font-size: 0.8em;">Nenhuma conquista encontrada neste filtro.</div>';
+        return;
+    }
+
+    filtered.forEach((ach) => {
+        const isDone = unlockedSet.has(ach.id);
+        const currentVal = getAchievementProgress(ach);
+        const percentage = Math.min(100, Math.floor((currentVal / ach.target) * 100));
+
+        list.innerHTML += `
+            <div class="achievement-card ${isDone ? 'completed' : ''}">
+                <div class="achievement-icon">${ach.icon}</div>
+                <div class="achievement-details">
+                    <div class="achievement-title">${ach.title} ${isDone ? '✅' : ''}</div>
+                    <div class="achievement-desc">${ach.description}</div>
+                    <div class="achievement-progress-bg">
+                        <div class="achievement-progress-fill" style="width: ${isDone ? '100%' : percentage + '%'};"></div>
+                    </div>
+                </div>
+                <div class="achievement-reward">
+                    +${ach.rewardCoins} 💰
+                </div>
+            </div>
+        `;
+    });
+}
+
+function renderThemes() {
+    const grid = document.getElementById('themesGrid');
+    if (!grid) {return;};
+    grid.innerHTML = '';
+
+    Object.values(localThemeDefinitions).forEach(t => {
+        const isUnlocked = localUnlockedThemes.includes(t.id);
+        const isActive = localTheme === t.id;
+        
+        const btn = document.createElement('button');
+        btn.className = `theme-btn ${isUnlocked ? 'unlocked' : 'locked'} ${isActive ? 'active' : ''}`;
+        btn.innerHTML = `${isUnlocked ? '' : '🔒 '}${t.name}`;
+        btn.title = isUnlocked ? `Aplicar tema ${t.name}` : `Tema Bloqueado! Desbloqueie no Cassino 🎰`;
+        
+        if (isUnlocked) {
+            btn.onclick = () => selectThemePreset(t);
+        }
+        grid.appendChild(btn);
+    });
+}
+
+function selectThemePreset(theme) {
+    applyWallVisual(theme.wallColor);
+    applyFloorVisual(theme.floorColor);
+    localTheme = theme.id;
+    renderThemes();
+    
+    vscode.postMessage({
+        command: 'saveTheme',
+        themeId: theme.id
+    });
+}
 
 const rarityColors = {
     comum: '#8b949e',
@@ -55,22 +341,35 @@ function closeRouletteModal() {
 }
 
 // --- PINTURA ---
-function applyWallVisual(color) {
+function applyWallVisual(color, textureUrl) {
     const wallLeft = document.getElementById('wallLeft');
     const wallRight = document.getElementById('wallRight');
     if (wallLeft && wallRight) {
-        wallLeft.style.backgroundImage = 'none';
-        wallRight.style.backgroundImage = 'none';
         wallLeft.style.backgroundColor = color;
         wallRight.style.backgroundColor = color;
+        
+        if (textureUrl) {
+            wallLeft.style.backgroundImage = `url("${textureUrl}")`;
+            wallRight.style.backgroundImage = `url("${textureUrl}")`;
+            wallLeft.style.backgroundRepeat = 'repeat';
+            wallRight.style.backgroundRepeat = 'repeat';
+        } else {
+            wallLeft.style.backgroundImage = 'none';
+            wallRight.style.backgroundImage = 'none';
+        }
     }
 }
 
-function applyFloorVisual(color) {
+function applyFloorVisual(color, textureUrl) {
     const roomBase = document.getElementById('roomBase');
     if (roomBase) {
-        roomBase.style.backgroundImage = 'none';
         roomBase.style.backgroundColor = color;
+        if (textureUrl) {
+            roomBase.style.backgroundImage = `url("${textureUrl}")`;
+            roomBase.style.backgroundRepeat = 'repeat';
+        } else {
+            roomBase.style.backgroundImage = 'none';
+        }
     }
 }
 
@@ -107,16 +406,17 @@ function renderInventory() {
         const item = catalog[itemId];
         if (item) {
             const isPlaced = localPlaced.includes(itemId);
+            const itemStyle = item.filter ? `style="filter: ${item.filter}; image-rendering: pixelated;"` : 'style="image-rendering: pixelated;"';
             list.innerHTML += `
                 <div class="shop-item">
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <img src="${item.icon}" style="max-width:28px; max-height:28px;" />
+                        <img src="${item.icon}" ${itemStyle} style="max-width:28px; max-height:28px;" />
                         <div>
                             <div style="font-weight:bold; font-size:0.85em;">${item.name}</div>
                             <span class="badge" style="color:${rarityColors[item.rarity]}">${item.rarity.toUpperCase()}</span>
                         </div>
                     </div>
-                    <button class="btn btn-sm" style="background:${isPlaced ? 'var(--accent-rose)' : '#4a8258'}" onclick="togglePlacement('${item.id}')">
+                    <button class="btn btn-sm" style="background:${isPlaced ? '#d11313' : '#286b39'}" onclick="togglePlacement('${item.id}')">
                         ${isPlaced ? 'Guardar' : 'Colocar'}
                     </button>
                 </div>
@@ -165,7 +465,7 @@ function applyPositionOffset(element, offset) {
     element.style.marginLeft = offset.x + 'px';
     const visual = element.querySelector('.item-visual');
     if (visual) {
-        visual.style.transform = `translateY(${offset.z || 0}px)`;
+        visual.style.transform = `translateY(${- (offset.z || 0)}px)`;
     }
 }
 
@@ -368,6 +668,9 @@ function setupSaveGacha(rewardData) {
     const initialAngle = currentWheelAngle % (2 * Math.PI);
 
     let lightPhase = 0;
+    let lastSector = -1;
+    const sectorCount = wheelSlices.length;
+
     const lightInterval = setInterval(() => {
         lightPhase = (lightPhase + 1) % 2;
     }, 150);
@@ -377,6 +680,13 @@ function setupSaveGacha(rewardData) {
         const progress = Math.min(elapsed / duration, 1);
         const easeOut = 1 - Math.pow(1 - progress, 3);
         currentWheelAngle = initialAngle + (finalAngle - initialAngle) * easeOut;
+
+        // Efeito sonoro dinâmico ao passar por cada divisão da roleta
+        const rawSector = Math.floor(((currentWheelAngle + Math.PI / 2) % (2 * Math.PI)) / ((2 * Math.PI) / sectorCount));
+        if (rawSector !== lastSector && progress < 0.95) {
+            AudioSynth.playTick();
+            lastSector = rawSector;
+        }
 
         drawWheel(currentWheelAngle, lightPhase);
 
@@ -396,6 +706,7 @@ function setupSaveGacha(rewardData) {
 }
 
 function revealCoinAward() {
+    AudioSynth.playWin();
     const container = document.getElementById('gachaResultContainer');
     const color = rarityColors[currentReward.rarity] || '#dfb15b';
     const card = document.getElementById('rewardCard');
@@ -421,6 +732,7 @@ function claimRewards() {
         return;
     }
 
+    AudioSynth.playCoin();
     vscode.postMessage({
         command: 'saveRewards',
         amount: currentReward.coinReward
@@ -493,46 +805,127 @@ function launchConfetti() {
 }
 
 // --- CASSINO (SLOTS ULTRA ANIMADO) ---
+let reelIntervals = [];
+
 function spinSlots() {
     if (isSpinning) {
         return;
     }
     if (localCoins < 2000) {
+        AudioSynth.playBuzzer();
         document.getElementById('slotStatus').innerHTML = '<span style="color:var(--accent-rose);">Saldo insuficiente! Custo: 2.000 moedas.</span>';
         return;
     }
 
     isSpinning = true;
-    document.getElementById('spinBtn').disabled = true;
-    document.getElementById('slotStatus').innerText = "Girando rolos...";
+
+    // Efeitos visuais adicionais (vibração do corpo físico do caça-níquel e brilho)
+    const machine = document.querySelector('.machine-body');
+    if (machine) {
+        machine.classList.add('shaking');
+    }
+
+    // Dispara animação da alavanca e som mecânico
+    const lever = document.getElementById('slotLever');
+    if (lever) {
+        AudioSynth.playLever();
+        lever.classList.add('pulled');
+        setTimeout(() => lever.classList.remove('pulled'), 400);
+    }
+
+    document.getElementById('slotStatus').innerText = "Boa sorte...";
+
+    reelIntervals.forEach(clearInterval);
+    reelIntervals = [];
 
     const reels = [document.getElementById('slot1'), document.getElementById('slot2'), document.getElementById('slot3')];
-    reels.forEach((r) => {
+    const symbolsList = ['🍒', '💰', '💎', '⭐', '🎁', '🎰', '💣'];
+
+    reels.forEach((r, idx) => {
         if (r) {
             r.classList.add('spinning');
+            const interval = setInterval(() => {
+                r.innerText = symbolsList[Math.floor(Math.random() * symbolsList.length)];
+                // Som leve de rotação para cada símbolo alterado
+                if (Math.random() < 0.25) {
+                    AudioSynth.playTick();
+                }
+            }, 70);
+            reelIntervals.push(interval);
         }
     });
 
-    let count = 0;
-    const symbolsList = ['🍒', '💰', '💎', '⭐', '🎁', '🎰', '💣'];
-    const interval = setInterval(() => {
-        reels.forEach((r) => {
-            if (r) {
-                r.innerText = symbolsList[Math.floor(Math.random() * symbolsList.length)];
-            }
-        });
-        count++;
-        if (count > 15) {
-            clearInterval(interval);
-            reels.forEach((r) => {
-                if (r) {
-                    r.classList.remove('spinning');
-                }
-            });
-            vscode.postMessage({ command: 'spinSlotMachine' });
-        }
-    }, 100);
+    vscode.postMessage({ command: 'spinSlotMachine' });
 }
+
+function handleSlotResult(data) {
+    const reels = [
+        document.getElementById('slot1'),
+        document.getElementById('slot2'),
+        document.getElementById('slot3')
+    ];
+
+    const finalSymbols = data.symbols;
+    const stopDelays = [400, 1100, 1900];
+
+    reels.forEach((reel, index) => {
+        setTimeout(() => {
+            if (reelIntervals[index]) {
+                clearInterval(reelIntervals[index]);
+            }
+            if (reel) {
+                reel.classList.remove('spinning');
+                reel.innerText = finalSymbols[index];
+                
+                AudioSynth.playStop();
+                reel.classList.add('win-pop');
+                setTimeout(() => reel.classList.remove('win-pop'), 500);
+            }
+
+            if (index === reels.length - 1) {
+                isSpinning = false;
+                
+                const machine = document.querySelector('.machine-body');
+                if (machine) {
+                    machine.classList.remove('shaking');
+                }
+
+                let statusText = '';
+
+                if (data.rewardItem) {
+                    statusText += `🎉 GANHOU: <strong style="color:var(--accent-gold); text-shadow:0 0 10px #dfb15b;">${data.rewardItem.name}</strong>! `;
+                    AudioSynth.playJackpot();
+                    launchConfetti();
+                }
+                if (data.rewardTheme) {
+                    statusText += `🎨 TEMA LIBERADO: <strong style="color:var(--accent-cyan); text-shadow:0 0 10px #00f0ff;">${data.rewardTheme.name}</strong>! `;
+                    AudioSynth.playJackpot();
+                    launchConfetti();
+                } else if (!data.rewardItem) {
+                    if (data.rewardCoins > 0) {
+                        statusText += `Recompensa: <strong style="color:var(--accent-gold);">+${data.rewardCoins} moedas</strong>.`;
+                        AudioSynth.playWin();
+                    } else if (data.rewardCoins < 0) {
+                        statusText += `Recompensa: <strong style="color:#ff4d4d;">${data.rewardCoins} moedas</strong>.`;
+                        AudioSynth.playLoss();
+                    }
+                }
+
+                document.getElementById('slotStatus').innerHTML = statusText;
+            }
+        }, stopDelays[index]);
+    });
+}
+
+// CORREÇÃO DA MENSAGEM DE RESULTADO:
+window.addEventListener('message', (event) => {
+    const data = event.data;
+    switch (data.command) {
+         case 'slotMachineResult':
+            handleSlotResult(data);
+            break;
+    }
+});
 
 // --- NAVEGAÇÃO E DRAG DE CÂMERA DO AMBIENTE ---
 function setupRoomDragging() {
@@ -547,6 +940,12 @@ function setupRoomDragging() {
     let startY = 0;
     let currentPanX = 0;
     let currentPanY = 0;
+    let currentZoom = 1.0; // Fator de zoom inicial
+
+    // Atualiza a transformação aplicando translação, rotação isométrica e zoom
+    function updateTransform() {
+        roomBase.style.transform = `translate(${currentPanX}px, ${currentPanY}px) scale(${currentZoom}) rotateX(60deg) rotateZ(-45deg)`;
+    }
 
     viewport.onmousedown = (e) => {
         if (e.target.closest('.room-item') || e.target.closest('.btn')) {
@@ -563,11 +962,25 @@ function setupRoomDragging() {
         }
         currentPanX = e.clientX - startX;
         currentPanY = e.clientY - startY;
-        roomBase.style.transform = `translate(${currentPanX}px, ${currentPanY}px) rotateX(60deg) rotateZ(-45deg)`;
+        updateTransform();
     };
 
     window.onmouseup = () => {
         isPanning = false;
+    };
+
+    // Controle de zoom através da roda do mouse (scroll)
+    viewport.onwheel = (e) => {
+        e.preventDefault();
+        const zoomStep = 0.08;
+        if (e.deltaY < 0) {
+            // Zoom In (Limite máximo de 2.5x)
+            currentZoom = Math.min(2.5, currentZoom + zoomStep);
+        } else {
+            // Zoom Out (Limite mínimo de 0.5x)
+            currentZoom = Math.max(0.5, currentZoom - zoomStep);
+        }
+        updateTransform();
     };
 }
 
@@ -580,33 +993,30 @@ window.addEventListener('message', (event) => {
             localInventory = data.inventory || [];
             localPlaced = data.placed || [];
             localOffsets = data.offsets || {};
+            localUnlockedThemes = data.unlockedThemes || ['yakuza'];
+            localThemeDefinitions = data.themeDefinitions || {};
+            localTheme = data.theme || 'yakuza';
+            
+            localAchievements = data.achievements || [];
+            localUnlockedAchievements = data.unlockedAchievements || [];
+            localStats = data.stats || {};
 
             document.getElementById('coinBalance').innerText = localCoins;
             renderInventory();
-            clearAllIntervals();
+            renderThemes();
+            renderAchievements();
 
-            if (data.theme && data.theme.startsWith('custom|')) {
-                const parts = data.theme.split('|');
-                const savedWall = parts[1] || '#8f745f';
-                const savedFloor = parts[2] || '#342764';
-                document.getElementById('wallColorPicker').value = savedWall;
-                document.getElementById('floorColorPicker').value = savedFloor;
-                applyWallVisual(savedWall);
-                applyFloorVisual(savedFloor);
-            } else {
-                document.getElementById('wallColorPicker').value = '#8f745f';
-                document.getElementById('floorColorPicker').value = '#342764';
-                applyWallVisual('#8f745f');
-                applyFloorVisual('#342764');
+            const currentDef = localThemeDefinitions[localTheme] || localThemeDefinitions['yakuza'];
+            if (currentDef) {
+                applyWallVisual(currentDef.wallColor, currentDef.wallTexture);
+                applyFloorVisual(currentDef.floorColor, currentDef.floorTexture);
             }
 
-            if (data.wallUri) {
-                const wallLeft = document.getElementById('wallLeft');
-                const wallRight = document.getElementById('wallRight');
-                if (wallLeft && wallRight && (!data.theme || !data.theme.startsWith('custom|'))) {
-                    wallLeft.style.backgroundImage = `url("${data.wallUri}")`;
-                    wallRight.style.backgroundImage = `url("${data.wallUri}")`;
-                }
+            const wallLeft = document.getElementById('wallLeft');
+            const wallRight = document.getElementById('wallRight');
+            if (wallLeft && wallRight) {
+                wallLeft.style.backgroundImage = 'none';
+                wallRight.style.backgroundImage = 'none';
             }
 
             const room = document.getElementById('roomBase');
@@ -621,15 +1031,16 @@ window.addEventListener('message', (event) => {
                     itemEl.className = 'room-item placement-' + item.placement;
                     itemEl.id = 'item-' + item.id;
 
-                    const offset = localOffsets[item.id] || { x: 0, y: 0, z: 0 };
-                    applyPositionOffset(itemEl, offset);
+                    const filterStyle = item.filter ? `filter: ${item.filter};` : '';
 
                     itemEl.innerHTML = `
                         <div class="item-visual" title="${item.name}">
-                            <img id="img-${item.id}" src="${item.icon}" />
+                            <img id="img-${item.id}" src="${item.icon}" style="${filterStyle}" />
                         </div>
-                        <div class="item-glow"></div>
                     `;
+
+                    const offset = localOffsets[item.id] || { x: 0, y: 0, z: 0 };
+                    applyPositionOffset(itemEl, offset);
 
                     itemEl.onclick = (e) => {
                         e.stopPropagation();
@@ -653,12 +1064,18 @@ window.addEventListener('message', (event) => {
             document.getElementById('slot2').innerText = data.symbols[1];
             document.getElementById('slot3').innerText = data.symbols[2];
 
+            let statusText = '';
             if (data.rewardItem) {
-                document.getElementById('slotStatus').innerHTML = `🎉 JACKPOT! Ganhou: <strong style="color:var(--accent-gold);">${data.rewardItem.name}</strong>!`;
-                launchConfetti();
-            } else {
-                document.getElementById('slotStatus').innerHTML = `Recompensa: <strong style="color:var(--accent-gold);">+${data.rewardCoins} moedas</strong>.`;
+                statusText += `🎉 Ganhou: <strong style="color:var(--accent-gold);">${data.rewardItem.name}</strong>! `;
             }
+            if (data.rewardTheme) {
+                statusText += `🎨 TEMA LIBERADO: <strong style="color:var(--accent-cyan);">${data.rewardTheme.name}</strong>! `;
+                launchConfetti();
+            } else if (!data.rewardItem) {
+                statusText += `Recompensa: <strong style="color:var(--accent-gold);">+${data.rewardCoins} moedas</strong>.`;
+            }
+
+            document.getElementById('slotStatus').innerHTML = statusText;
             break;
 
         case 'triggerChest':
