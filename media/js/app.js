@@ -282,10 +282,11 @@ function renderInventory() {
         const item = catalog[itemId];
         if (item) {
             const isPlaced = localPlaced.includes(itemId);
+            const itemStyle = item.filter ? `style="filter: ${item.filter}; image-rendering: pixelated;"` : 'style="image-rendering: pixelated;"';
             list.innerHTML += `
                 <div class="shop-item">
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <img src="${item.icon}" style="max-width:28px; max-height:28px;" />
+                        <img src="${item.icon}" ${itemStyle} style="max-width:28px; max-height:28px;" />
                         <div>
                             <div style="font-weight:bold; font-size:0.85em;">${item.name}</div>
                             <span class="badge" style="color:${rarityColors[item.rarity]}">${item.rarity.toUpperCase()}</span>
@@ -679,8 +680,17 @@ function spinSlots() {
     }
 
     isSpinning = true;
-    document.getElementById('spinBtn').disabled = true;
-    document.getElementById('slotStatus').innerText = "Girando rolos...";
+
+    // Dispara a animação da alavanca lateral descendo e subindo
+    const lever = document.getElementById('slotLever');
+    if (lever) {
+        lever.classList.add('pulled');
+        setTimeout(() => {
+            lever.classList.remove('pulled');
+        }, 400);
+    }
+
+    document.getElementById('slotStatus').innerText = "Boa sorte...";
 
     const reels = [document.getElementById('slot1'), document.getElementById('slot2'), document.getElementById('slot3')];
     reels.forEach((r) => {
@@ -709,6 +719,50 @@ function spinSlots() {
         }
     }, 100);
 }
+
+// CORREÇÃO DA MENSAGEM DE RESULTADO (Resolve o bug do "+-100"):
+window.addEventListener('message', (event) => {
+    const data = event.data;
+    switch (data.command) {
+        case 'slotMachineResult':
+            isSpinning = false;
+
+            const r1 = document.getElementById('slot1');
+            const r2 = document.getElementById('slot2');
+            const r3 = document.getElementById('slot3');
+
+            r1.innerText = data.symbols[0];
+            r2.innerText = data.symbols[1];
+            r3.innerText = data.symbols[2];
+
+            // Animação de pop e pulso nos rolos
+            [r1, r2, r3].forEach((r, idx) => {
+                setTimeout(() => {
+                    r.classList.add('win-pop');
+                    setTimeout(() => r.classList.remove('win-pop'), 600);
+                }, idx * 120);
+            });
+
+            let statusText = '';
+            if (data.rewardItem) {
+                statusText += `🎉 GANHOU: <strong style="color:var(--accent-gold); text-shadow:0 0 10px #dfb15b;">${data.rewardItem.name}</strong>! `;
+                launchConfetti();
+            }
+            if (data.rewardTheme) {
+                statusText += `🎨 TEMA LIBERADO: <strong style="color:var(--accent-cyan); text-shadow:0 0 10px #00f0ff;">${data.rewardTheme.name}</strong>! `;
+                launchConfetti();
+            } else if (!data.rewardItem) {
+                if (data.rewardCoins > 0) {
+                    statusText += `Recompensa: <strong style="color:var(--accent-gold);">+${data.rewardCoins} moedas</strong>.`;
+                } else if (data.rewardCoins < 0) {
+                    statusText += `Recompensa: <strong style="color:#ff4d4d;">${data.rewardCoins} moedas</strong>.`;
+                }
+            }
+
+            document.getElementById('slotStatus').innerHTML = statusText;
+            break;
+    }
+});
 
 // --- NAVEGAÇÃO E DRAG DE CÂMERA DO AMBIENTE ---
 function setupRoomDragging() {
@@ -798,15 +852,14 @@ window.addEventListener('message', (event) => {
                     itemEl.className = 'room-item placement-' + item.placement;
                     itemEl.id = 'item-' + item.id;
 
-                    // 1º Injeta o HTML para criar o elemento .item-visual no DOM
+                    const filterStyle = item.filter ? `filter: ${item.filter};` : '';
+
                     itemEl.innerHTML = `
                         <div class="item-visual" title="${item.name}">
-                            <img id="img-${item.id}" src="${item.icon}" />
+                            <img id="img-${item.id}" src="${item.icon}" style="${filterStyle}" />
                         </div>
-                        <div class="item-glow"></div>
                     `;
 
-                    // 2º Agora aplica o offset e a altura (que encontra o .item-visual)
                     const offset = localOffsets[item.id] || { x: 0, y: 0, z: 0 };
                     applyPositionOffset(itemEl, offset);
 

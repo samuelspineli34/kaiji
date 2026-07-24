@@ -20,7 +20,7 @@
             <div class="header-actions">
                 <button class="btn btn-secondary" onclick="togglePanel('themePanel')">Pintar 🎨</button>
                 <button class="btn btn-secondary" onclick="toggleAchievements(true)">Conquistas 🏆</button>
-                <button class="btn btn-casino" onclick="toggleSlotMachine(true)">🎰 Cassino</button>
+                <button class="btn btn-casino" onclick="toggleSlotMachine(true)">Cassino 🎰</button>
                 <button class="btn btn-primary" onclick="toggleShop(true)">Mochila 🎒</button>
             </div>
         </header>
@@ -92,18 +92,52 @@
             
             <div class="casino-layout">
                 <!-- ÁREA PRINCIPAL DO CAÇA-NÍQUEL (ESQUERDA) -->
+                <!-- ÁREA PRINCIPAL DO CAÇA-NÍQUEL TEIAI CASINO -->
                 <div class="casino-main">
                     <p class="casino-desc">
-                        Gire por <strong class="gold-text">2.000 💰</strong>.<br>
+                        Puxe a alavanca por <strong class="gold-text">2.000 💰</strong>.<br>
                         Alinhe <strong class="purple-text">🎰 🎰 🎰</strong> ou <strong class="gold-text">🎁 🎁 🎁</strong> para obter móveis!
                     </p>
-                    <div class="slot-reels">
-                        <div id="slot1" class="reel">🍒</div>
-                        <div id="slot2" class="reel">💰</div>
-                        <div id="slot3" class="reel">💎</div>
+
+                    <!-- MÁQUINA E ALAVANCA LATERAL -->
+                    <div class="slot-machine-wrapper">
+                        <!-- CORPO DA MÁQUINA DE CASSINO -->
+                        <div class="machine-body">
+                            <!-- HEADER DA MÁQUINA COM LOGO TEIAI CASINO EM SVG -->
+                            <div class="machine-header">
+                                <svg class="teiai-logo-svg" viewBox="0 0 200 36" width="150" height="28">
+                                    <defs>
+                                        <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stop-color="#fff0a5" />
+                                            <stop offset="50%" stop-color="#dfb15b" />
+                                            <stop offset="100%" stop-color="#8c6114" />
+                                        </linearGradient>
+                                    </defs>
+                                    <text x="50%" y="70%" text-anchor="middle" fill="url(#goldGrad)" font-size="19" font-weight="900" font-family="'Segoe UI', sans-serif" letter-spacing="3">TEIAI CASINO</text>
+                                </svg>
+                            </div>
+
+                            <!-- PAINEL DOS ROLOS (REELS) COM LUZES LED -->
+                            <div class="reels-wrapper">
+                                <div class="reel-window"><div id="slot1" class="reel">🍒</div></div>
+                                <div class="reel-window"><div id="slot2" class="reel">💰</div></div>
+                                <div class="reel-window"><div id="slot3" class="reel">💎</div></div>
+                            </div>
+
+                            <!-- PAINEL DE INFORMAÇÕES -->
+                            <div class="info-panel">
+                                <div id="slotStatus" class="status-text">Puxe a alavanca para começar.</div>
+                            </div>
+                        </div>
+
+                        <!-- ALAVANCA MECÂNICA LATERAL -->
+                        <div class="lever-container" id="slotLever" onclick="spinSlots()" title="Puxar Alavanca 🎰">
+                            <div class="lever-base"></div>
+                            <div class="lever-shaft">
+                                <div class="lever-ball"></div>
+                            </div>
+                        </div>
                     </div>
-                    <button id="spinBtn" class="btn btn-casino-spin" onclick="spinSlots()">GIRAR 🎰</button>
-                    <div id="slotStatus" class="casino-status">Insira 2.000 moedas para começar.</div>
                 </div>
 
                 <!-- TABELA DE PROBABILIDADES SEMPRE ABERTA NA DIREITA -->

@@ -24,6 +24,7 @@ export interface Item {
     placement: 'desk' | 'floor' | 'wall';
     obtainable: Obtainable;
     animation?: AnimationConfig;
+    filter?: string;
 }
 
 // Substiua o dicionário ITEM_CATALOG por esta definição:
@@ -187,7 +188,15 @@ export const ITEM_CATALOG: Record<string, Item> = {
     'throne_gold': { id: 'throne_gold', name: 'Trono Imperial de Ouro', icon: 'Objects/Armchair_02.png', cost: 0, rarity: 'lendaria', category: 'moveis', placement: 'floor', obtainable: 'chest' },
     'arcade_cabinet': { id: 'arcade_cabinet', name: 'Fliperama Lendário Teiai', icon: 'Objects/GameConsole_01.png', cost: 0, rarity: 'lendaria', category: 'eletronicos', placement: 'floor', obtainable: 'chest' },
     'dragon_statue': { id: 'dragon_statue', name: 'Estátua Alquímica Suprema', icon: 'Objects/cauldron_hot_red.png', cost: 0, rarity: 'lendaria', category: 'decoracao', placement: 'floor', obtainable: 'chest' },
-    'crown_legend': { id: 'crown_legend', name: 'Coroa Imperial Suprema', icon: 'Objects/shield_yellow.png', cost: 0, rarity: 'lendaria', category: 'decoracao', placement: 'desk', obtainable: 'chest' }
+    'crown_legend': { id: 'crown_legend', name: 'Coroa Imperial Suprema', icon: 'Objects/shield_yellow.png', cost: 0, rarity: 'lendaria', category: 'decoracao', placement: 'desk', obtainable: 'chest' },
+
+    // VARIANTES COM FILTROS ESPECIAIS (EXPANSAO DE CATÁLOGO)
+    'sword_golden': { id: 'sword_golden', name: 'Espada de Ouro Maciço', icon: 'Objects/sword.png', cost: 0, rarity: 'rara', category: 'decoracao', placement: 'desk', obtainable: 'chest', filter: 'sepia(1) hue-rotate(5deg) saturate(6) brightness(1.2)' },
+    'chair_neon': { id: 'chair_neon', name: 'Cadeira Cyberpunk Neon', icon: 'Objects/chair_front_blue.png', cost: 0, rarity: 'incomum', category: 'moveis', placement: 'floor', obtainable: 'chest', filter: 'hue-rotate(280deg) saturate(3) contrast(1.2)' },
+    'potion_void': { id: 'potion_void', name: 'Poção do Vazio Cósmico', icon: 'Objects/potion_blue.png', cost: 0, rarity: 'rara', category: 'decoracao', placement: 'desk', obtainable: 'chest', filter: 'hue-rotate(220deg) saturate(4) brightness(1.4)' },
+    'plants_gold': { id: 'plants_gold', name: 'Planta Solar Sagrada', icon: 'Objects/Plants_15.png', cost: 0, rarity: 'rara', category: 'decoracao', placement: 'floor', obtainable: 'chest', filter: 'sepia(1) hue-rotate(15deg) saturate(5)' },
+    'fridge_pink': { id: 'fridge_pink', name: 'Geladeira Retrô Rosa', icon: 'Objects/Fridge_01.png', cost: 0, rarity: 'incomum', category: 'eletronicos', placement: 'floor', obtainable: 'chest', filter: 'hue-rotate(310deg) saturate(2)' },
+    'library_dark': { id: 'library_dark', name: 'Estante Obscura das Sombras', icon: 'Objects/library_full.png', cost: 0, rarity: 'rara', category: 'moveis', placement: 'floor', obtainable: 'chest', filter: 'brightness(0.6) contrast(1.5) hue-rotate(180deg)' }
 };
 
 
