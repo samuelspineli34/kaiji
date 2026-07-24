@@ -2,14 +2,16 @@
   "name": "kaiji",
   "displayName": "Kaiji",
   "publisher": "NullGarden",
+  "homepage": "https://www.linkedin.com/in/samuel-spineli/",
   "description": "What you must do now is to win! Just win! Don't hope to win, you have to win! Living without winning is not living.",
-  "version": "0.0.4",
+  "version": "1.0.0",
   "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.125.0"
   },
   "main": "./out/extension.js",
   "categories": [
+    "Visualization",
     "Other"
   ],
   "activationEvents": [
