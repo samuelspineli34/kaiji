@@ -3,71 +3,96 @@
 
 "No mundo dos negócios e do desenvolvimento, assim como nas mesas de apostas subterrâneas, o ser humano que não joga para vencer já aceitou a sua derrota."
 
-Kaiji é uma extensão de produtividade gamificada de alto risco para o Visual Studio Code, inspirada na filosofia de sobrevivência e risco da obra de Nobuyuki Fukumoto. Ela transforma o ato rotineiro de salvar código em uma aposta psicológica e financeira real para o seu cérebro, estimulando o foco por meio de recompensas variáveis de alta tensão.
+Kaiji é uma extensão de produtividade gamificada de alto risco para o Visual Studio Code, inspirada na filosofia de sobrevivência, desespero e recompensa da obra de Nobuyuki Fukumoto. Ela transforma o ato rotineiro de salvar código em uma aposta psicológica e financeira real para o seu cérebro, estimulando o foco absoluto por meio de recompensas variáveis, cassino subterrâneo e personalização de escritório.
 
 ---
 
-## A Filosofia do Risco: Por que Apostar é Fascinante?
+## A Filosofia do Risco: Por que Apostar no seu Código?
 
-A maioria dos programadores vive uma rotina monótona de escrita previsível de código. Porém, a mente humana não foi projetada para a estabilidade tediosa; nós evoluímos para responder ao risco, à escassez e à adrenalina da incerteza.
+A maioria dos programadores vive uma rotina monótona de escrita previsível de texto. Porém, a mente humana não foi projetada para a estabilidade tediosa; nós evoluímos para responder ao risco, à escassez e à adrenalina da incerteza.
 
-Apostar o seu esforço é a única forma de atribuir valor real à vida e ao trabalho. Quando você salva um arquivo com centenas de linhas modificadas, você não está apenas enviando dados ao disco rígido. Você está colocando sua força vital e seu tempo precioso na mesa de apostas. A incerteza de qual baú de recompensa será revelado gera uma descarga de dopamina que transforma o trabalho exaustivo em um jogo de sobrevivência psicológica pura. Como diria Tonegawa: "O dinheiro é mais importante que a própria vida, pois as pessoas gastam suas vidas para consegui-lo." No Kaiji, o seu código é a sua ficha de apostas.
+Apostar o seu esforço é a única forma de atribuir valor real ao trabalho. Quando você salva um arquivo com centenas de caracteres modificados sem erros de sintaxe, você não está apenas enviando dados ao disco rígido. Você está colocando sua força vital e seu tempo precioso na mesa de apostas do Grupo Teiai.
+
+Como diria Yukio Tonegawa: "O dinheiro é mais importante que a própria vida, pois as pessoas gastam suas vidas para consegui-lo." No Kaiji, o seu código limpo é a sua ficha de apostas. Zawa... Zawa...
 
 ---
 
 ## Como a Extensão Funciona Atualmente
 
-A extensão monitora as suas alterações em tempo real de forma local e segura. A mecânica atual está dividida em três pilares:
+A extensão monitora as suas alterações em tempo real de forma local, segura e integrada à validação de sintaxe do editor. O ecossistema atual é composto por cinco pilares interligados:
 
-### 1. O Esforço (A Aposta)
+### 1. O Esforço e a Validação da Banca (Anti-Erro)
 
-Toda vez que você salva um arquivo de texto no editor, a extensão analisa o diferencial de caracteres adicionados em relação ao estado anterior do arquivo. Salvamentos vazios ou repetitivos são descartados pela banca (sistema anti-cheat).
+Toda vez que você salva um arquivo de texto, a extensão analisa o diferencial de caracteres em relação ao salvamento anterior:
 
-O nível de esforço determina o tipo de caixa de recompensa que você recebe:
+* Checagem de Erros de Sintaxe: Se o código for salvo com erros estruturais ou de compilação, a banca rejeita o salvamento e bloqueia a roleta até que você corrija os problemas.
+* Alteração Mínima (menos de 30 caracteres): Ganha de 1 a 3 moedas de consolação diretamente na carteira para recompensar pequenos ajustes.
+* Progresso Acumulado da Roleta: Alterações válidas acumulam no medidor de esforço até atingir a meta para disparar a Roleta de Código.
 
-* Alteração Irrelevante (menos de 30 caracteres): Ganha de 1 a 3 moedas de consolação diretamente na carteira.
-* Alteração Pequena (entre 30 e 149 caracteres): Garante uma Caixa Comum.
-* Alteração Média (entre 150 e 499 caracteres): Garante uma Caixa Incomum.
-* Alteração Grande (entre 500 e 1499 caracteres): Garante uma Caixa Rara.
-* Alteração Épica (1500 caracteres ou mais): Garante a lendária Caixa Lendária (Jackpot).
+### 2. A Roleta de Código (Gacha de Salvamento)
 
-### 2. A Abertura das Caixas (O Gacha)
+Ao atingir o volume de código necessário, uma Roleta Redonda Iluminada em Canvas 3D é acionada na tela. O valor da recompensa sorteada em moedas depende diretamente do volume acumulado de caracteres processados:
 
-Após o salvamento, uma tela de abertura de caixas é exibida com base na raridade conquistada. Ao abrir a caixa:
+* Nível Comum (80 a 149 caracteres): Sorteia recompensas entre 50 e 100 moedas.
+* Nível Incomum (150 a 499 caracteres): Sorteia recompensas entre 250 e 400 moedas.
+* Nível Raro (500 a 1499 caracteres): Sorteia recompensas entre 800 e 1200 moedas.
+* Nível Lendário (1500 caracteres ou mais): Sorteia prêmios gigantescos de 2500 a 5000 moedas.
 
-* O usuário recebe uma quantia variável de moedas baseada na raridade da caixa.
-* O usuário ganha uma decoração aleatória correspondente àquela raridade específica de forma gratuita, adicionando-a ao seu inventário imediatamente.
+### 3. O Cassino Teiai (Caça-Níquel com Alavanca Lateral Mecânica)
 
-### 3. O Espaço Decorativo Isométrico em 3D e a Loja
+Para os desenvolvedores dispostos a arriscar suas moedas em busca de prestígio, o Cassino Teiai oferece uma máquina caça-níquel clássica completa com gabinete estilizado e iluminação LED dourada:
 
-Utilizando o comando de visualização, você pode abrir o seu escritório de apostas virtual.
+* Custo por Giro: 2.000 moedas.
+* Alavanca Mecânica Lateral: Acionada por clique com animação física realista de rotação e retorno por mola.
+* Rolos Sequenciais: Os rolos giram com efeito de velocidade e param um por um (Rolo 1, Rolo 2 e Rolo 3) para gerar suspense real de cassino.
+* Recompensas e Riscos do Cassino: Possibilidade de ganhar móveis raros e lendários, desbloquear temas exclusivos de pintura, multiplicar moedas com estrelas e diamantes, ou sofrer penalidades com bombas (-100, -250 ou -500 moedas).
 
-* Painel Isométrico: Um quarto renderizado em projeção isométrica 3D onde os seus itens comprados ou ganhos (mesas, aparelhos, decorações lendárias) são posicionados e exibidos dinamicamente.
-* Loja do Teiai Group: Um mercado dividido em abas (Móveis, Aparelhos e Outros) que permite utilizar as suas moedas acumuladas para comprar novos itens decorativos e expandir seu império visual.
+### 4. O Espaço Decorativo Isométrico em 3D e Pintura de Temas
+
+A aba principal exibe o seu escritório de apostas virtual em perspectiva isométrica 3D com recursos avançados de customização:
+
+* Câmera Draggable: Navegação e arraste livre da cena isométrica com o mouse.
+* Posicionamento D-Pad e Elevação Z: Controle preciso de movimentação dos móveis nos eixos X e Y, além de um slider de elevação vertical (eixo Z) para posicionar itens em cima de mesas ou prateleiras.
+* Sistema de Temas e Pintura: Desbloqueie e aplique diversos temas de parede e chão (Yakuza, Cyberpunk, Ouro Real, Zen Tatami, Crepúsculo, Sakura, Taverna Florestal, Sótao Nórdico, entre outros).
+* Variantes e Filtros CSS de Iluminação: Móveis com efeitos visuais especiais como edições Neon, Ouro Maciço, Vazio Cósmico, Retrô e Sombras Elementais.
+
+### 5. O Sistema Mestre de Conquistas (Achievements)
+
+Um painel completo de conquistas para acompanhar a sua jornada de evolução e vício em código. O jogo conta com mais de 120 conquistas categorizadas:
+
+* Categorias: Coleção de Itens, Giros na Roleta, Giros no Cassino, Acerto de Jackpots, Riqueza Acumulada, Móveis Posicionados, Temas Desbloqueados e Raridades Colecionadas.
+* Recompensas em Moedas e Itens Exclusivos: Ao atingir a última conquista de cada módulo, o jogador ganha quantias massivas de moedas e móveis exclusivos imperdíveis (como a Coroa Imperial, a Estátua Alquímica e o Fliperama de Ouro).
+* Conquista Perfeccionista Supremo (100%): Concedida ao completar todas as outras conquistas do jogo, premiando o jogador com o lendário Troféu Kaiji de Platina.
 
 ---
 
-## Catálogo de Itens Decorativos e Raridades
+## Catálogo de Raridades de Itens
 
-O jogo atualmente conta com 16 decorações exclusivas para colecionar, divididas em quatro categorias de prestígio:
+Os itens decorativos disponíveis no jogo estão divididos em quatro níveis de prestígio:
 
-* Comum (Filtro de iluminação padrão): Caneca de Café, Mini Cacto, Luminária de Mesa, Tapete Básico.
-* Incomum (Móveis estruturais): Cadeira Ergonômica, Estante de Livros, Teclado Mecânico RGB, Monitores de Áudio.
-* Rara (Tecnologia e colecionáveis): Monitor Ultrawide, Bonsai Imperial, Fliperama Portátil, Luminária de Lava.
-* Lendária (Setups de alta escala): Supercomputador Quântico, Projetor Estelar, Estátua de Dragão Dourado, Portal Interdimensional.
+* Comum: Cadeiras simples, bancos rústicos, velas, poções básicas, tapetes e luminárias.
+* Incomum: Poltronas estofadas, estantes arcanas, frascos animados, sofás contemporâneos, espadas e cabideiros.
+* Rara: Computadores desktop, cadeiras gamer, caldeirões alquímicos animados, janelas ensolaradas, bicicletas ergométricas e réplicas de ouro.
+* Lendária: Janela do crepúsculo animada, baú cheio de ouro, trono imperial de ouro, fliperama teiai, estátua de dragão e o troféu de platina mestre.
 
 ---
 
 ## Como Rodar e Testar Localmente
 
-Caso queira iniciar o projeto em modo de desenvolvimento para testes:
+Caso queira compilar e testar a extensão em ambiente de desenvolvimento:
 
-1. Abra a pasta raiz da extensão no VS Code.
-2. Abra o terminal integrado e inicie a compilação contínua do TypeScript:
+1. Abra a pasta raiz do projeto no VS Code.
+2. No terminal integrado, instale as dependências e inicie a compilação do TypeScript:
+   npm run compile
+   ou para compilação automática contínua:
    npm run watch
-3. Pressione a tecla F5 para abrir a janela de testes (Extension Development Host).
-4. Na janela de testes, abra uma pasta que possua um repositório Git iniciado.
-5. Abra a paleta de comandos (Ctrl+Shift+P ou Cmd+Shift+P) e execute:
-   Kaiji: Abrir Meu Espaço
+3. Pressione F5 para abrir a janela de testes (Extension Development Host).
+4. Na janela de testes, abra qualquer projeto ou pasta de código.
+5. Salve alterações nos seus arquivos de texto para acumular progresso e ativar a Roleta e o Cassino.
 
-Sempre que salvar modificações reais em seus arquivos nesta janela de testes, as caixas de recompensas serão acionadas automaticamente.
+---
+
+## Persistência de Dados
+
+Seu saldo de moedas, inventário, posições customizadas dos móveis, temas e conquistas são salvos automaticamente no armazenamento global do seu VS Code. Caso deseje reiniciar sua jornada do zero, utilize o comando na paleta de comandos (Ctrl+Shift+P / Cmd+Shift+P):
+Kaiji: Reset Progress
