@@ -10,6 +10,142 @@ try {
     };
 }
 
+// --- SISTEMA DE ÁUDIO SINTETIZADO (WEB AUDIO API) ---
+const AudioSynth = {
+    ctx: null,
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    },
+    playLever() {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.2);
+    },
+    playTick() {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(750, this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.04);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.04);
+    },
+    playStop() {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+        osc.frequency.setValueAtTime(90, this.ctx.currentTime + 0.06);
+        gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.15);
+    },
+    playWin() {
+        this.init();
+        const now = this.ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+        notes.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+            gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.08 + 0.25);
+            osc.start(now + idx * 0.08);
+            osc.stop(now + idx * 0.08 + 0.28);
+        });
+    },
+    playJackpot() {
+        this.init();
+        const now = this.ctx.currentTime;
+        const chords = [
+            [523.25, 659.25, 783.99],
+            [587.33, 739.99, 880.00],
+            [659.25, 830.61, 987.77],
+            [1046.50, 1318.51, 1567.98]
+        ];
+        chords.forEach((chord, chordIdx) => {
+            chord.forEach((freq) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(freq, now + chordIdx * 0.12);
+                gain.gain.setValueAtTime(0.12, now + chordIdx * 0.12);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + chordIdx * 0.12 + 0.35);
+                osc.start(now + chordIdx * 0.12);
+                osc.stop(now + chordIdx * 0.12 + 0.4);
+            });
+        });
+    },
+    playLoss() {
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(280, now);
+        osc.frequency.linearRampToValueAtTime(90, now + 0.65);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.65);
+        osc.start();
+        osc.stop(now + 0.65);
+    },
+    playCoin() {
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(987.77, now);
+        osc.frequency.setValueAtTime(1318.51, now + 0.08);
+        gain.gain.setValueAtTime(0.22, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+        osc.start();
+        osc.stop(now + 0.4);
+    },
+    playBuzzer() {
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(100, now);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+        osc.start();
+        osc.stop(now + 0.35);
+    }
+};
+
 let localCoins = 0;
 let localInventory = [];
 let localPlaced = [];
@@ -237,18 +373,6 @@ function applyFloorVisual(color, textureUrl) {
     }
 }
 
-function selectThemePreset(theme) {
-    applyWallVisual(theme.wallColor, theme.wallTexture);
-    applyFloorVisual(theme.floorColor, theme.floorTexture);
-    localTheme = theme.id;
-    renderThemes();
-
-    vscode.postMessage({
-        command: 'saveTheme',
-        themeId: theme.id
-    });
-}
-
 function changeWallColor(color) {
     applyWallVisual(color);
     saveCustomColors();
@@ -341,7 +465,6 @@ function applyPositionOffset(element, offset) {
     element.style.marginLeft = offset.x + 'px';
     const visual = element.querySelector('.item-visual');
     if (visual) {
-        // Subir a altura no isometrico = deslocar Y negativo
         visual.style.transform = `translateY(${- (offset.z || 0)}px)`;
     }
 }
@@ -545,6 +668,9 @@ function setupSaveGacha(rewardData) {
     const initialAngle = currentWheelAngle % (2 * Math.PI);
 
     let lightPhase = 0;
+    let lastSector = -1;
+    const sectorCount = wheelSlices.length;
+
     const lightInterval = setInterval(() => {
         lightPhase = (lightPhase + 1) % 2;
     }, 150);
@@ -554,6 +680,13 @@ function setupSaveGacha(rewardData) {
         const progress = Math.min(elapsed / duration, 1);
         const easeOut = 1 - Math.pow(1 - progress, 3);
         currentWheelAngle = initialAngle + (finalAngle - initialAngle) * easeOut;
+
+        // Efeito sonoro dinâmico ao passar por cada divisão da roleta
+        const rawSector = Math.floor(((currentWheelAngle + Math.PI / 2) % (2 * Math.PI)) / ((2 * Math.PI) / sectorCount));
+        if (rawSector !== lastSector && progress < 0.95) {
+            AudioSynth.playTick();
+            lastSector = rawSector;
+        }
 
         drawWheel(currentWheelAngle, lightPhase);
 
@@ -573,6 +706,7 @@ function setupSaveGacha(rewardData) {
 }
 
 function revealCoinAward() {
+    AudioSynth.playWin();
     const container = document.getElementById('gachaResultContainer');
     const color = rarityColors[currentReward.rarity] || '#dfb15b';
     const card = document.getElementById('rewardCard');
@@ -598,6 +732,7 @@ function claimRewards() {
         return;
     }
 
+    AudioSynth.playCoin();
     vscode.postMessage({
         command: 'saveRewards',
         amount: currentReward.coinReward
@@ -677,44 +812,52 @@ function spinSlots() {
         return;
     }
     if (localCoins < 2000) {
+        AudioSynth.playBuzzer();
         document.getElementById('slotStatus').innerHTML = '<span style="color:var(--accent-rose);">Saldo insuficiente! Custo: 2.000 moedas.</span>';
         return;
     }
 
     isSpinning = true;
 
-    // Dispara animação da alavanca
+    // Efeitos visuais adicionais (vibração do corpo físico do caça-níquel e brilho)
+    const machine = document.querySelector('.machine-body');
+    if (machine) {
+        machine.classList.add('shaking');
+    }
+
+    // Dispara animação da alavanca e som mecânico
     const lever = document.getElementById('slotLever');
     if (lever) {
+        AudioSynth.playLever();
         lever.classList.add('pulled');
         setTimeout(() => lever.classList.remove('pulled'), 400);
     }
 
     document.getElementById('slotStatus').innerText = "Boa sorte...";
 
-    // Limpa intervalos antigos caso existam
     reelIntervals.forEach(clearInterval);
     reelIntervals = [];
 
     const reels = [document.getElementById('slot1'), document.getElementById('slot2'), document.getElementById('slot3')];
     const symbolsList = ['🍒', '💰', '💎', '⭐', '🎁', '🎰', '💣'];
 
-    // Inicia rotação contínua nos 3 rolos
     reels.forEach((r, idx) => {
         if (r) {
             r.classList.add('spinning');
             const interval = setInterval(() => {
                 r.innerText = symbolsList[Math.floor(Math.random() * symbolsList.length)];
+                // Som leve de rotação para cada símbolo alterado
+                if (Math.random() < 0.25) {
+                    AudioSynth.playTick();
+                }
             }, 70);
             reelIntervals.push(interval);
         }
     });
 
-    // Envia solicitação de sorteio ao servidor
     vscode.postMessage({ command: 'spinSlotMachine' });
 }
 
-// RECEBE O RESULTADO E PARA OS ROLOS UM POR UM (PARADA SEQUENCIAL DE CASSINO)
 function handleSlotResult(data) {
     const reels = [
         document.getElementById('slot1'),
@@ -723,11 +866,10 @@ function handleSlotResult(data) {
     ];
 
     const finalSymbols = data.symbols;
-    const stopDelays = [400, 1100, 1900]; // Parada com intervalo de suspense entre cada rolo!
+    const stopDelays = [400, 1100, 1900];
 
     reels.forEach((reel, index) => {
         setTimeout(() => {
-            // Para o rolo individual
             if (reelIntervals[index]) {
                 clearInterval(reelIntervals[index]);
             }
@@ -735,28 +877,37 @@ function handleSlotResult(data) {
                 reel.classList.remove('spinning');
                 reel.innerText = finalSymbols[index];
                 
-                // Animação de encaixe/trava do rolo
+                AudioSynth.playStop();
                 reel.classList.add('win-pop');
                 setTimeout(() => reel.classList.remove('win-pop'), 500);
             }
 
-            // Quando o último rolo parar, revela a mensagem e prêmios!
             if (index === reels.length - 1) {
                 isSpinning = false;
+                
+                const machine = document.querySelector('.machine-body');
+                if (machine) {
+                    machine.classList.remove('shaking');
+                }
+
                 let statusText = '';
 
                 if (data.rewardItem) {
                     statusText += `🎉 GANHOU: <strong style="color:var(--accent-gold); text-shadow:0 0 10px #dfb15b;">${data.rewardItem.name}</strong>! `;
+                    AudioSynth.playJackpot();
                     launchConfetti();
                 }
                 if (data.rewardTheme) {
                     statusText += `🎨 TEMA LIBERADO: <strong style="color:var(--accent-cyan); text-shadow:0 0 10px #00f0ff;">${data.rewardTheme.name}</strong>! `;
+                    AudioSynth.playJackpot();
                     launchConfetti();
                 } else if (!data.rewardItem) {
                     if (data.rewardCoins > 0) {
                         statusText += `Recompensa: <strong style="color:var(--accent-gold);">+${data.rewardCoins} moedas</strong>.`;
+                        AudioSynth.playWin();
                     } else if (data.rewardCoins < 0) {
                         statusText += `Recompensa: <strong style="color:#ff4d4d;">${data.rewardCoins} moedas</strong>.`;
+                        AudioSynth.playLoss();
                     }
                 }
 
@@ -766,7 +917,7 @@ function handleSlotResult(data) {
     });
 }
 
-// CORREÇÃO DA MENSAGEM DE RESULTADO (Resolve o bug do "+-100"):
+// CORREÇÃO DA MENSAGEM DE RESULTADO:
 window.addEventListener('message', (event) => {
     const data = event.data;
     switch (data.command) {
@@ -789,6 +940,12 @@ function setupRoomDragging() {
     let startY = 0;
     let currentPanX = 0;
     let currentPanY = 0;
+    let currentZoom = 1.0; // Fator de zoom inicial
+
+    // Atualiza a transformação aplicando translação, rotação isométrica e zoom
+    function updateTransform() {
+        roomBase.style.transform = `translate(${currentPanX}px, ${currentPanY}px) scale(${currentZoom}) rotateX(60deg) rotateZ(-45deg)`;
+    }
 
     viewport.onmousedown = (e) => {
         if (e.target.closest('.room-item') || e.target.closest('.btn')) {
@@ -805,11 +962,25 @@ function setupRoomDragging() {
         }
         currentPanX = e.clientX - startX;
         currentPanY = e.clientY - startY;
-        roomBase.style.transform = `translate(${currentPanX}px, ${currentPanY}px) rotateX(60deg) rotateZ(-45deg)`;
+        updateTransform();
     };
 
     window.onmouseup = () => {
         isPanning = false;
+    };
+
+    // Controle de zoom através da roda do mouse (scroll)
+    viewport.onwheel = (e) => {
+        e.preventDefault();
+        const zoomStep = 0.08;
+        if (e.deltaY < 0) {
+            // Zoom In (Limite máximo de 2.5x)
+            currentZoom = Math.min(2.5, currentZoom + zoomStep);
+        } else {
+            // Zoom Out (Limite mínimo de 0.5x)
+            currentZoom = Math.max(0.5, currentZoom - zoomStep);
+        }
+        updateTransform();
     };
 }
 
@@ -826,7 +997,6 @@ window.addEventListener('message', (event) => {
             localThemeDefinitions = data.themeDefinitions || {};
             localTheme = data.theme || 'yakuza';
             
-            // Variáveis de Conquistas
             localAchievements = data.achievements || [];
             localUnlockedAchievements = data.unlockedAchievements || [];
             localStats = data.stats || {};
@@ -836,14 +1006,12 @@ window.addEventListener('message', (event) => {
             renderThemes();
             renderAchievements();
 
-            // Aplica as cores do tema selecionado
             const currentDef = localThemeDefinitions[localTheme] || localThemeDefinitions['yakuza'];
             if (currentDef) {
                 applyWallVisual(currentDef.wallColor, currentDef.wallTexture);
                 applyFloorVisual(currentDef.floorColor, currentDef.floorTexture);
             }
 
-            // Garante que nenhuma imagem de fundo seja aplicada sobre a parede
             const wallLeft = document.getElementById('wallLeft');
             const wallRight = document.getElementById('wallRight');
             if (wallLeft && wallRight) {
@@ -851,8 +1019,7 @@ window.addEventListener('message', (event) => {
                 wallRight.style.backgroundImage = 'none';
             }
 
-            // Desenha os móveis posicionados no quarto
-           const room = document.getElementById('roomBase');
+            const room = document.getElementById('roomBase');
             document.querySelectorAll('.room-item').forEach((el) => {
                 el.remove();
             });
