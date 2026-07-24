@@ -491,7 +491,7 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
         let wonItem: Item | null = null;
 
         if (roll < 0.0025) {
-            // Jackpot
+            // Jackpot (0,25% de chance)
             s1 = '🎰'; s2 = '🎰'; s3 = '🎰';
             const jackpots = this._context.globalState.get<number>('stats-jackpots', 0) + 1;
             this._context.globalState.update('stats-jackpots', jackpots);
@@ -502,6 +502,7 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
             this.giveItemDirectly(item.id);
             wonItem = { ...item, icon: getWebviewUri(this._context, this._view!.webview, `icons/${item.icon}`) };
         } else if (roll < 0.0100) {
+            // Decor Raro (0,75% de chance)
             s1 = '👑'; s2 = '👑'; s3 = '👑';
             const items = Object.values(ITEM_CATALOG).filter((i) => i.rarity === 'rara');
             const pool = items.length > 0 ? items : Object.values(ITEM_CATALOG);
@@ -509,6 +510,7 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
             this.giveItemDirectly(item.id);
             wonItem = { ...item, icon: getWebviewUri(this._context, this._view!.webview, `icons/${item.icon}`) };
         } else if (roll < 0.0250) {
+            // Decor Incomum (1,50% de chance)
             s1 = '📦'; s2 = '📦'; s3 = '📦';
             const items = Object.values(ITEM_CATALOG).filter((i) => i.rarity === 'incomum');
             const pool = items.length > 0 ? items : Object.values(ITEM_CATALOG);
@@ -516,6 +518,7 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
             this.giveItemDirectly(item.id);
             wonItem = { ...item, icon: getWebviewUri(this._context, this._view!.webview, `icons/${item.icon}`) };
         } else if (roll < 0.0500) {
+            // Decor Comum (2,50% de chance)
             s1 = '🎁'; s2 = '🎁'; s3 = '🎁';
             const items = Object.values(ITEM_CATALOG).filter((i) => i.rarity === 'comum');
             const pool = items.length > 0 ? items : Object.values(ITEM_CATALOG);
@@ -523,27 +526,35 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
             this.giveItemDirectly(item.id);
             wonItem = { ...item, icon: getWebviewUri(this._context, this._view!.webview, `icons/${item.icon}`) };
         } else if (roll < 0.0600) {
+            // +5.000 Moedas (1,00% de chance)
             s1 = '⭐'; s2 = '⭐'; s3 = '⭐';
             rewardCoins = 5000; this.addCoins(rewardCoins);
         } else if (roll < 0.0800) {
+            // +3.000 Moedas (2,00% de chance)
             s1 = '💎'; s2 = '💎'; s3 = '💎';
             rewardCoins = 3000; this.addCoins(rewardCoins);
         } else if (roll < 0.1200) {
+            // +1.500 Moedas (4,00% de chance)
             s1 = '💰'; s2 = '💰'; s3 = '💰';
             rewardCoins = 1500; this.addCoins(rewardCoins);
         } else if (roll < 0.2200) {
+            // +500 Moedas (10,00% de chance)
             s1 = '🍒'; s2 = '🍒'; s3 = '🍒';
             rewardCoins = 500; this.addCoins(rewardCoins);
         } else if (roll < 0.4000) {
+            // +50~100 Moedas (18,00% de chance)
             s1 = '♟'; s2 = '♟'; s3 = '♟';
             rewardCoins = Math.floor(Math.random() * 51) + 50; this.addCoins(rewardCoins);
         } else if (roll < 0.6500) {
+            // -100 Moedas (25,00% de chance)
             s1 = '💣'; s2 = '🍒'; s3 = '💰';
             rewardCoins = -100; this.addCoins(rewardCoins);
         } else if (roll < 0.8500) {
+            // -250 Moedas (20,00% de chance)
             s1 = '💣'; s2 = '💣'; s3 = '🍒';
             rewardCoins = -250; this.addCoins(rewardCoins);
         } else {
+            // -500 Moedas (15,00% de chance)
             s1 = '💣'; s2 = '💣'; s3 = '💣';
             rewardCoins = -500; this.addCoins(rewardCoins);
         }
