@@ -20,6 +20,121 @@ let isSpinning = false;
 let currentReward = null;
 let localUnlockedThemes = ['yakuza'];
 let localThemeDefinitions = {};
+// --- SISTEMA DE CONQUISTAS (CLIENT-SIDE) ---
+let localAchievements = [];
+let localUnlockedAchievements = [];
+let localStats = {};
+let currentAchievementFilter = 'all';
+
+window.toggleAchievements = function(open) {
+    const panel = document.getElementById('achievementsPanel');
+    if (panel) {
+        if (open) {
+            renderAchievements();
+        }
+        panel.classList.toggle('open', Boolean(open));
+    }
+};
+
+window.filterAchievements = function(filter, btn) {
+    currentAchievementFilter = filter;
+    document.querySelectorAll('.achievements-filter .filter-btn').forEach((b) => {
+        b.classList.remove('active');
+    });
+    if (btn) {
+        btn.classList.add('active');
+    }
+    renderAchievements();
+};
+
+function getAchievementProgress(ach) {
+    const inv = localInventory || [];
+    const placed = localPlaced || [];
+    const themes = localUnlockedThemes || [];
+
+    let val = 0;
+    switch (ach.category) {
+        case 'colecao':
+            val = inv.length;
+            break;
+        case 'roleta':
+            val = localStats.rouletteSpins || 0;
+            break;
+        case 'cassino':
+            val = localStats.slotSpins || 0;
+            break;
+        case 'jackpot':
+            val = localStats.jackpots || 0;
+            break;
+        case 'riqueza':
+            val = localStats.coinsEarned || 0;
+            break;
+        case 'decoracao':
+            val = placed.length;
+            break;
+        case 'temas':
+            val = themes.length;
+            break;
+        case 'raridade': {
+            const targetRarity = ach.id.replace('rarity_', '').split('_')[0];
+            val = inv.filter((id) => {
+                const item = typeof catalog !== 'undefined' ? catalog[id] : null;
+                return item && item.rarity === targetRarity;
+            }).length;
+            break;
+        }
+    }
+    return val;
+}
+
+function renderAchievements() {
+    const list = document.getElementById('achievementsList');
+    const summary = document.getElementById('achievementsSummary');
+    if (!list) {
+        return;
+    }
+
+    list.innerHTML = '';
+    const unlockedSet = new Set(localUnlockedAchievements || []);
+
+    if (summary) {
+        summary.innerText = `${unlockedSet.size}/${localAchievements.length}`;
+    }
+
+    const filtered = (localAchievements || []).filter((ach) => {
+        const isDone = unlockedSet.has(ach.id);
+        if (currentAchievementFilter === 'completed') { return isDone; }
+        if (currentAchievementFilter === 'in_progress') { return !isDone; }
+        return true;
+    });
+
+    if (filtered.length === 0) {
+        list.innerHTML = '<div style="text-align:center; padding: 30px; color: #a28f80; font-size: 0.8em;">Nenhuma conquista encontrada neste filtro.</div>';
+        return;
+    }
+
+    filtered.forEach((ach) => {
+        const isDone = unlockedSet.has(ach.id);
+        const currentVal = getAchievementProgress(ach);
+        const percentage = Math.min(100, Math.floor((currentVal / ach.target) * 100));
+
+        list.innerHTML += `
+            <div class="achievement-card ${isDone ? 'completed' : ''}">
+                <div class="achievement-icon">${ach.icon}</div>
+                <div class="achievement-details">
+                    <div class="achievement-title">${ach.title} ${isDone ? '✅' : ''}</div>
+                    <div class="achievement-desc">${ach.description}</div>
+                    <div class="achievement-progress-bg">
+                        <div class="achievement-progress-fill" style="width: ${isDone ? '100%' : percentage + '%'};"></div>
+                    </div>
+                </div>
+                <div class="achievement-reward">
+                    +${ach.rewardCoins} 💰
+                </div>
+            </div>
+        `;
+    });
+}
 
 function renderThemes() {
     const grid = document.getElementById('themesGrid');
@@ -644,11 +759,16 @@ window.addEventListener('message', (event) => {
             localUnlockedThemes = data.unlockedThemes || ['yakuza'];
             localThemeDefinitions = data.themeDefinitions || {};
             localTheme = data.theme || 'yakuza';
+            
+            // Variáveis de Conquistas
+            localAchievements = data.achievements || [];
+            localUnlockedAchievements = data.unlockedAchievements || [];
+            localStats = data.stats || {};
 
             document.getElementById('coinBalance').innerText = localCoins;
             renderInventory();
             renderThemes();
-            clearAllIntervals();
+            renderAchievements();
 
             // Aplica as cores do tema selecionado
             const currentDef = localThemeDefinitions[localTheme] || localThemeDefinitions['yakuza'];

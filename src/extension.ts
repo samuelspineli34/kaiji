@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ITEM_CATALOG, Item, Offset, Rarity } from './items';
+import { ACHIEVEMENTS_CATALOG, Achievement, UserStats } from './achievements';
 
 const documentCharTracker = new Map<string, number>();
 
@@ -335,10 +336,95 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
         webviewView.webview.html = html;
     }
 
-    public handleSaveAndAssessChest(charsAdded: number): void {
-        if (!this._view) {
-            return;
+    public getUnlockedAchievements(): string[] {
+        return this._context.globalState.get<string[]>('decor-unlocked-achievements', []);
+    }
+
+    public checkAchievements(): void {
+        const unlocked = new Set(this.getUnlockedAchievements());
+        const inv = this.getInventory();
+        const placed = this.getPlaced();
+        const themes = this.getUnlockedThemes();
+
+        let common = 0, uncommon = 0, rare = 0, legendary = 0;
+        inv.forEach((id) => {
+            const item = ITEM_CATALOG[id];
+            if (item) {
+                if (item.rarity === 'comum') { common++; }
+                if (item.rarity === 'incomum') { uncommon++; }
+                if (item.rarity === 'rara') { rare++; }
+                if (item.rarity === 'lendaria') { legendary++; }
+            }
+        });
+
+        const stats: UserStats = {
+            rouletteSpins: this._context.globalState.get<number>('stats-roulette-spins', 0),
+            slotSpins: this._context.globalState.get<number>('stats-slot-spins', 0),
+            jackpots: this._context.globalState.get<number>('stats-jackpots', 0),
+            coinsEarned: this._context.globalState.get<number>('stats-coins-earned', 0),
+            itemsCollected: inv.length,
+            itemsPlaced: placed.length,
+            themesUnlocked: themes.length,
+            commonItems: common,
+            uncommonItems: uncommon,
+            rareItems: rare,
+            legendaryItems: legendary
+        };
+
+        let newAchievementsUnlocked = 0;
+
+        ACHIEVEMENTS_CATALOG.forEach((ach) => {
+            if (unlocked.has(ach.id)) { return; }
+
+            let currentValue = 0;
+            if (ach.id === 'master_all_achievements') {
+                // Conta quantas conquistas (exceto a própria Mestre) já foram concluídas
+                currentValue = unlocked.has('master_all_achievements') ? unlocked.size : unlocked.size;
+            } else {
+                switch (ach.category) {
+                    case 'colecao': currentValue = stats.itemsCollected; break;
+                    case 'roleta': currentValue = stats.rouletteSpins; break;
+                    case 'cassino': currentValue = stats.slotSpins; break;
+                    case 'jackpot': currentValue = stats.jackpots; break;
+                    case 'riqueza': currentValue = stats.coinsEarned; break;
+                    case 'decoracao': currentValue = stats.itemsPlaced; break;
+                    case 'temas': currentValue = stats.themesUnlocked; break;
+                    case 'raridade':
+                        if (ach.id.startsWith('rarity_comum')) { currentValue = stats.commonItems; }
+                        if (ach.id.startsWith('rarity_incomum')) { currentValue = stats.uncommonItems; }
+                        if (ach.id.startsWith('rarity_rara')) { currentValue = stats.rareItems; }
+                        if (ach.id.startsWith('rarity_lendaria')) { currentValue = stats.legendaryItems; }
+                        break;
+                }
+            }
+
+            if (currentValue >= ach.target) {
+                unlocked.add(ach.id);
+                newAchievementsUnlocked++;
+                this.addCoins(ach.rewardCoins);
+
+                // Concede o item exclusivo diretamente ao inventário caso a conquista possua
+                if (ach.rewardItemId) {
+                    this.giveItemDirectly(ach.rewardItemId);
+                }
+
+                vscode.window.showInformationMessage(
+                    `🏆 CONQUISTA DESBLOQUEADA: "${ach.title}"! (+${ach.rewardCoins} 💰)${ach.rewardItemId ? ' 🎁 Item Exclusivo concedido!' : ''}`
+                );
+            }
+        });
+
+        if (newAchievementsUnlocked > 0) {
+            this._context.globalState.update('decor-unlocked-achievements', Array.from(unlocked));
         }
+    }
+
+    public handleSaveAndAssessChest(charsAdded: number): void {
+        if (!this._view) { return; }
+
+        // Incrementa contagem de giros de roleta
+        const spins = this._context.globalState.get<number>('stats-roulette-spins', 0) + 1;
+        this._context.globalState.update('stats-roulette-spins', spins);
 
         this._accumulatedProgress += charsAdded;
         const targetThreshold = 80;
@@ -346,18 +432,14 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
         if (charsAdded < 30 && this._accumulatedProgress < targetThreshold) {
             const consoleCoins = Math.floor(Math.random() * 3) + 1;
             this.addCoins(consoleCoins);
+            this.checkAchievements();
             this.updateState();
-            vscode.window.setStatusBarMessage(
-                `✍️ Código salvo (+${charsAdded} chars). Progresso da Roleta: ${this._accumulatedProgress}/${targetThreshold}`,
-                4000
-            );
             return;
         }
 
         const totalEvaluated = this._accumulatedProgress;
         this._accumulatedProgress = 0;
 
-        // VALORES DE COIN LÓGICOS DE ACORDO COM AS RARIDADES
         let rarity: Rarity = 'comum';
         let coinReward = 50;
 
@@ -376,7 +458,6 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
         }
 
         this._view.show?.(true);
-
         this._view.webview.postMessage({
             command: 'triggerChest',
             rollType: 'coins',
@@ -384,8 +465,6 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
             coinReward: coinReward,
             charsAdded: totalEvaluated
         });
-
-        vscode.window.setStatusBarMessage(`🎰 ROLETA ATIVADA! ${totalEvaluated} caracteres codificados sem erros!`, 5000);
     }
 
     private handleSpinSlotMachine(): void {
@@ -400,93 +479,81 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
             return;
         }
 
+        // Incrementa estatística de giros do cassino
+        const slotSpins = this._context.globalState.get<number>('stats-slot-spins', 0) + 1;
+        this._context.globalState.update('stats-slot-spins', slotSpins);
+
         this._context.globalState.update('decor-coins', coins - cost);
 
         const roll = Math.random();
-        let winType: 'jackpot' | 'box' | 'star' | 'diamond' | 'bag' | 'cherry' | 'loss' = 'loss';
-
-        if (roll < 0.02) {
-            winType = 'jackpot';
-        } else if (roll < 0.07) {
-            winType = 'box';
-        } else if (roll < 0.17) {
-            winType = 'star';
-        } else if (roll < 0.32) {
-            winType = 'diamond';
-        } else if (roll < 0.55) {
-            winType = 'bag';
-        } else if (roll < 0.80) {
-            winType = 'cherry';
-        } else {
-            winType = 'loss';
-        }
-
-
-        const symbolsList = ['🍒', '💰', '💎', '⭐', '🎁', '🎰', '💣'];
-        let s1 = '';
-        let s2 = '';
-        let s3 = '';
+        let s1 = '', s2 = '', s3 = '';
         let rewardCoins = 0;
         let wonItem: Item | null = null;
 
-        if (winType === 'jackpot') {
+        if (roll < 0.0025) {
+            // Jackpot
             s1 = '🎰'; s2 = '🎰'; s3 = '🎰';
-            const rareItems = Object.values(ITEM_CATALOG).filter((i) => {
-                return i.rarity === 'rara' || i.rarity === 'lendaria';
-            });
-            const item = rareItems[Math.floor(Math.random() * rareItems.length)];
+            const jackpots = this._context.globalState.get<number>('stats-jackpots', 0) + 1;
+            this._context.globalState.update('stats-jackpots', jackpots);
+
+            const items = Object.values(ITEM_CATALOG).filter((i) => i.rarity === 'lendaria');
+            const pool = items.length > 0 ? items : Object.values(ITEM_CATALOG);
+            const item = pool[Math.floor(Math.random() * pool.length)];
             this.giveItemDirectly(item.id);
-            wonItem = {
-                ...item,
-                icon: getWebviewUri(this._context, this._view!.webview, `icons/${item.icon}`)
-            };
-        } else if (winType === 'box') {
+            wonItem = { ...item, icon: getWebviewUri(this._context, this._view!.webview, `icons/${item.icon}`) };
+        } else if (roll < 0.0100) {
+            s1 = '👑'; s2 = '👑'; s3 = '👑';
+            const items = Object.values(ITEM_CATALOG).filter((i) => i.rarity === 'rara');
+            const pool = items.length > 0 ? items : Object.values(ITEM_CATALOG);
+            const item = pool[Math.floor(Math.random() * pool.length)];
+            this.giveItemDirectly(item.id);
+            wonItem = { ...item, icon: getWebviewUri(this._context, this._view!.webview, `icons/${item.icon}`) };
+        } else if (roll < 0.0250) {
+            s1 = '📦'; s2 = '📦'; s3 = '📦';
+            const items = Object.values(ITEM_CATALOG).filter((i) => i.rarity === 'incomum');
+            const pool = items.length > 0 ? items : Object.values(ITEM_CATALOG);
+            const item = pool[Math.floor(Math.random() * pool.length)];
+            this.giveItemDirectly(item.id);
+            wonItem = { ...item, icon: getWebviewUri(this._context, this._view!.webview, `icons/${item.icon}`) };
+        } else if (roll < 0.0500) {
             s1 = '🎁'; s2 = '🎁'; s3 = '🎁';
-            const commonItems = Object.values(ITEM_CATALOG).filter((i) => {
-                return i.rarity === 'comum' || i.rarity === 'incomum';
-            });
-            const item = commonItems[Math.floor(Math.random() * commonItems.length)];
+            const items = Object.values(ITEM_CATALOG).filter((i) => i.rarity === 'comum');
+            const pool = items.length > 0 ? items : Object.values(ITEM_CATALOG);
+            const item = pool[Math.floor(Math.random() * pool.length)];
             this.giveItemDirectly(item.id);
-            wonItem = {
-                ...item,
-                icon: getWebviewUri(this._context, this._view!.webview, `icons/${item.icon}`)
-            };
-        } else if (winType === 'star') {
+            wonItem = { ...item, icon: getWebviewUri(this._context, this._view!.webview, `icons/${item.icon}`) };
+        } else if (roll < 0.0600) {
             s1 = '⭐'; s2 = '⭐'; s3 = '⭐';
-            rewardCoins = 5000;
-            this.addCoins(rewardCoins);
-        } else if (winType === 'diamond') {
+            rewardCoins = 5000; this.addCoins(rewardCoins);
+        } else if (roll < 0.0800) {
             s1 = '💎'; s2 = '💎'; s3 = '💎';
-            rewardCoins = 3000;
-            this.addCoins(rewardCoins);
-        } else if (winType === 'bag') {
+            rewardCoins = 3000; this.addCoins(rewardCoins);
+        } else if (roll < 0.1200) {
             s1 = '💰'; s2 = '💰'; s3 = '💰';
-            rewardCoins = 1500;
-            this.addCoins(rewardCoins);
-        } else if (winType === 'cherry') {
+            rewardCoins = 1500; this.addCoins(rewardCoins);
+        } else if (roll < 0.2200) {
             s1 = '🍒'; s2 = '🍒'; s3 = '🍒';
-            rewardCoins = 500;
-            this.addCoins(rewardCoins);
+            rewardCoins = 500; this.addCoins(rewardCoins);
+        } else if (roll < 0.4000) {
+            s1 = '🪙'; s2 = '🪙'; s3 = '🪙';
+            rewardCoins = Math.floor(Math.random() * 51) + 50; this.addCoins(rewardCoins);
+        } else if (roll < 0.6500) {
+            s1 = '💣'; s2 = '🍒'; s3 = '💰';
+            rewardCoins = -100; this.addCoins(rewardCoins);
+        } else if (roll < 0.8500) {
+            s1 = '💣'; s2 = '💣'; s3 = '🍒';
+            rewardCoins = -250; this.addCoins(rewardCoins);
         } else {
-            s1 = symbolsList[Math.floor(Math.random() * (symbolsList.length - 2))];
-            do {
-                s2 = symbolsList[Math.floor(Math.random() * symbolsList.length)];
-            } while (s2 === s1 && Math.random() < 0.6);
-
-            do {
-                s3 = symbolsList[Math.floor(Math.random() * symbolsList.length)];
-            } while ((s1 === s2 && s3 === s1) || (s3 === s1 && s3 === s2));
-
-            rewardCoins = Math.floor(Math.random() * 51) + 50;
-            this.addCoins(rewardCoins);
+            s1 = '💣'; s2 = '💣'; s3 = '💣';
+            rewardCoins = -500; this.addCoins(rewardCoins);
         }
 
         let rewardTheme: ThemeDefinition | null = null;
-
-        // Se tirar Jackpot ou Caixa, tem 40% de chance de liberar um tema novo além do item:
-        if ((winType === 'jackpot' || winType === 'box') && Math.random() < 0.4) {
+        if (wonItem && Math.random() < 0.4) {
             rewardTheme = this.unlockRandomTheme();
         }
+
+        this.checkAchievements();
 
         this._view?.webview.postMessage({
             command: 'slotMachineResult',
@@ -495,15 +562,6 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
             rewardCoins: rewardCoins,
             rewardItem: wonItem,
             rewardTheme: rewardTheme,
-            newCoins: this.getCoins()
-        });
-
-        this._view?.webview.postMessage({
-            command: 'slotMachineResult',
-            success: true,
-            symbols: [s1, s2, s3],
-            rewardCoins: rewardCoins,
-            rewardItem: wonItem,
             newCoins: this.getCoins()
         });
 
@@ -525,8 +583,9 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
         return THEME_DEFINITIONS[randomThemeId];
     }
 
-    public updateState(): void {
+     public updateState(): void {
         if (this._view) {
+            this.checkAchievements();
             const wallUri = getWebviewUri(this._context, this._view.webview, 'icons/Wall Green plain.png');
             this._view.webview.postMessage({
                 command: 'syncState',
@@ -537,6 +596,14 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
                 theme: this.getTheme(),
                 unlockedThemes: this.getUnlockedThemes(),
                 themeDefinitions: THEME_DEFINITIONS,
+                achievements: ACHIEVEMENTS_CATALOG,
+                unlockedAchievements: this.getUnlockedAchievements(),
+                stats: {
+                    rouletteSpins: this._context.globalState.get<number>('stats-roulette-spins', 0),
+                    slotSpins: this._context.globalState.get<number>('stats-slot-spins', 0),
+                    jackpots: this._context.globalState.get<number>('stats-jackpots', 0),
+                    coinsEarned: this._context.globalState.get<number>('stats-coins-earned', 0)
+                },
                 wallUri: wallUri
             });
         }
@@ -547,6 +614,10 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
     }
 
     public addCoins(amount: number): void {
+        if (amount > 0) {
+            const earned = this._context.globalState.get<number>('stats-coins-earned', 0) + amount;
+            this._context.globalState.update('stats-coins-earned', earned);
+        }
         this._context.globalState.update('decor-coins', this.getCoins() + amount);
     }
 

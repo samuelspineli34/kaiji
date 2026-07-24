@@ -19,6 +19,7 @@
             </div>
             <div class="header-actions">
                 <button class="btn btn-secondary" onclick="togglePanel('themePanel')">Pintar 🎨</button>
+                <button class="btn btn-secondary" onclick="toggleAchievements(true)">Conquistas 🏆</button>
                 <button class="btn btn-casino" onclick="toggleSlotMachine(true)">🎰 Cassino</button>
                 <button class="btn btn-primary" onclick="toggleShop(true)">Mochila 🎒</button>
             </div>
@@ -60,6 +61,19 @@
             <button class="btn btn-sm" onclick="deselectItem()">OK</button>
         </div>
 
+        <div class="drawer-panel" id="achievementsPanel">
+            <div class="drawer-header">
+                <h3>🏆 Conquistas (<span id="achievementsSummary">0/0</span>)</h3>
+                <button class="btn btn-sm" onclick="toggleAchievements(false)">Fechar</button>
+            </div>
+            <div class="achievements-filter">
+                <button class="filter-btn active" onclick="filterAchievements('all', this)">Todas</button>
+                <button class="filter-btn" onclick="filterAchievements('completed', this)">Concluídas</button>
+                <button class="filter-btn" onclick="filterAchievements('in_progress', this)">Em Andamento</button>
+            </div>
+            <div class="achievements-list" id="achievementsList"></div>
+        </div>
+
         <!-- MOCHILA / INVENTÁRIO (SLIDE OVER) -->
         <div class="drawer-panel" id="shopPanel">
             <div class="drawer-header">
@@ -98,38 +112,63 @@
                     <div class="paytable-grid">
                         <div class="paytable-row rarity-lendaria">
                             <span class="paytable-symbols">🎰 🎰 🎰</span>
-                            <span class="paytable-prize">Decor Rara/Lendária</span>
-                            <span class="paytable-chance">2%</span>
+                            <span class="paytable-prize">Decor Lendário</span>
+                            <span class="paytable-chance">0,25%</span>
                         </div>
                         <div class="paytable-row rarity-rara">
+                            <span class="paytable-symbols">👑 👑 👑</span>
+                            <span class="paytable-prize">Decor Raro</span>
+                            <span class="paytable-chance">0,75%</span>
+                        </div>
+                        <div class="paytable-row rarity-incomum">
+                            <span class="paytable-symbols">📦 📦 📦</span>
+                            <span class="paytable-prize">Decor Incomum</span>
+                            <span class="paytable-chance">1,50%</span>
+                        </div>
+                        <div class="paytable-row rarity-comum">
                             <span class="paytable-symbols">🎁 🎁 🎁</span>
-                            <span class="paytable-prize">Decor Comum/Incomum</span>
-                            <span class="paytable-chance">5%</span>
+                            <span class="paytable-prize">Decor Comum</span>
+                            <span class="paytable-chance">2,50%</span>
                         </div>
                         <div class="paytable-row rarity-incomum">
                             <span class="paytable-symbols">⭐ ⭐ ⭐</span>
                             <span class="paytable-prize">+5.000 💰 Moedas</span>
-                            <span class="paytable-chance">10%</span>
+                            <span class="paytable-chance">1,00%</span>
                         </div>
                         <div class="paytable-row rarity-incomum">
                             <span class="paytable-symbols">💎 💎 💎</span>
                             <span class="paytable-prize">+3.000 💰 Moedas</span>
-                            <span class="paytable-chance">15%</span>
+                            <span class="paytable-chance">2,00%</span>
                         </div>
                         <div class="paytable-row rarity-comum">
                             <span class="paytable-symbols">💰 💰 💰</span>
                             <span class="paytable-prize">+1.500 💰 Moedas</span>
-                            <span class="paytable-chance">23%</span>
+                            <span class="paytable-chance">4,00%</span>
                         </div>
                         <div class="paytable-row rarity-comum">
                             <span class="paytable-symbols">🍒 🍒 🍒</span>
                             <span class="paytable-prize">+500 💰 Moedas</span>
-                            <span class="paytable-chance">25%</span>
+                            <span class="paytable-chance">10,00%</span>
+                        </div>
+                        <div class="paytable-row">
+                            <span class="paytable-symbols">🪙 🪙 🪙</span>
+                            <span class="paytable-prize">+50~100 💰 Consolação</span>
+                            <span class="paytable-chance">18,00%</span>
                         </div>
                         <div class="paytable-row">
                             <span class="paytable-symbols">💣 / Misto</span>
-                            <span class="paytable-prize">+50~100 💰 Consolação</span>
-                            <span class="paytable-chance">20%</span>
+                            <span class="paytable-prize">-100 💰 Moedas</span>
+                            <span class="paytable-chance">25,00%</span>
+                        </div>
+                        <div class="paytable-row">
+                            <span class="paytable-symbols">💣 💣 / Misto</span>
+                            <span class="paytable-prize">-250 💰 Moedas</span>
+                            <span class="paytable-chance">20,00%</span>
+                        </div>
+                        <div class="paytable-row">
+                            <span class="paytable-symbols">💣 💣 💣</span>
+                            <span class="paytable-prize">-500 💰 Moedas</span>
+                            <span class="paytable-chance">15,00%</span>
                         </div>
                     </div>
                 </div>

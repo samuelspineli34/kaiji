@@ -76,22 +76,15 @@ export const ITEM_CATALOG: Record<string, Item> = {
         id: 'cauldron_hot_green', name: 'Caldeirão Verde Fervente', icon: 'Objects/cauldron_hot_green.png', cost: 0, rarity: 'incomum', category: 'eletronicos', placement: 'floor', obtainable: 'chest',
         animation: { folder: 'Animations/cauldron_hot_green/cauldron_hot_green', frames: 6, suffix: '.png', speed: 120 }
     },
-    'cauldron_hot_red': {
-        id: 'cauldron_hot_red', name: 'Caldeirão Vermelho Fervente', icon: 'Objects/cauldron_hot_red.png', cost: 0, rarity: 'rara', category: 'eletronicos', placement: 'floor', obtainable: 'chest',
-        animation: { folder: 'Animations/cauldron_hot_red/cauldron_hot_red', frames: 6, suffix: '.png', speed: 120 }
-    },
     'window_sunset': {
         id: 'window_sunset', name: 'Janela Crepúsculo', icon: 'Objects/window_dawn-sunset.png', cost: 0, rarity: 'lendaria', category: 'decoracao', placement: 'wall', obtainable: 'chest',
         animation: { folder: 'Animations/window_dawn_sunset/window_dawn_sunset', frames: 15, suffix: '.png', speed: 100 }
     },
-    'chest_full': { id: 'chest_full', name: 'Baú de Ouro', icon: 'Objects/chest_front_full.png', cost: 0, rarity: 'lendaria', category: 'decoracao', placement: 'floor', obtainable: 'chest' },
     'spear_front': { id: 'spear_front', name: 'Lança de Infantaria', icon: 'Objects/spear_front.png', cost: 0, rarity: 'comum', category: 'decoracao', placement: 'desk', obtainable: 'chest' },
     'scissors': { id: 'scissors', name: 'Tesoura de Alfaiate', icon: 'Objects/scissors.png', cost: 0, rarity: 'comum', category: 'decoracao', placement: 'desk', obtainable: 'chest' },
     'knife': { id: 'knife', name: 'Trinchante de Cozinha', icon: 'Objects/kitchen_knife.png', cost: 0, rarity: 'comum', category: 'decoracao', placement: 'desk', obtainable: 'chest' },
-    'shield_gold': { id: 'shield_gold', name: 'Escudo Real de Ouro', icon: 'Objects/shield_yellow.png', cost: 0, rarity: 'rara', category: 'decoracao', placement: 'desk', obtainable: 'chest' },
 
     // Móveis Modernos
-    'armchair_02': { id: 'armchair_02', name: 'Poltrona Clássica', icon: 'Objects/Armchair_02.png', cost: 0, rarity: 'incomum', category: 'moveis', placement: 'floor', obtainable: 'chest' },
     'armchair_18': { id: 'armchair_18', name: 'Poltrona Estofada', icon: 'Objects/Armchair_18.png', cost: 0, rarity: 'incomum', category: 'moveis', placement: 'floor', obtainable: 'chest' },
     'bath_03': { id: 'bath_03', name: 'Banheira de Imersão', icon: 'Objects/Bath_03.png', cost: 0, rarity: 'rara', category: 'moveis', placement: 'floor', obtainable: 'chest' },
     'bed_02': { id: 'bed_02', name: 'Cama de Solteiro', icon: 'Objects/Bed_02.png', cost: 0, rarity: 'incomum', category: 'moveis', placement: 'floor', obtainable: 'chest' },
@@ -119,7 +112,6 @@ export const ITEM_CATALOG: Record<string, Item> = {
     'computer_01': { id: 'computer_01', name: 'Computador Desktop', icon: 'Objects/Computer_01.png', cost: 0, rarity: 'rara', category: 'eletronicos', placement: 'desk', obtainable: 'chest' },
     'exercise_bike_01': { id: 'exercise_bike_01', name: 'Bicicleta Ergométrica', icon: 'Objects/ExerciseBike_01.png', cost: 0, rarity: 'rara', category: 'eletronicos', placement: 'floor', obtainable: 'chest' },
     'fridge_01': { id: 'fridge_01', name: 'Geladeira', icon: 'Objects/Fridge_01.png', cost: 0, rarity: 'incomum', category: 'eletronicos', placement: 'floor', obtainable: 'chest' },
-    'game_console_01': { id: 'game_console_01', name: 'Console de Videogame', icon: 'Objects/GameConsole_01.png', cost: 0, rarity: 'rara', category: 'eletronicos', placement: 'desk', obtainable: 'chest' },
     'kitchen_d_10': { id: 'kitchen_d_10', name: 'Fogão Modular', icon: 'Objects/Kitchen_D_10.png', cost: 0, rarity: 'incomum', category: 'eletronicos', placement: 'floor', obtainable: 'chest' },
     'light_05': { id: 'light_05', name: 'Luminária de Mesa', icon: 'Objects/Light_05.png', cost: 0, rarity: 'comum', category: 'eletronicos', placement: 'desk', obtainable: 'chest' },
     'microwave_01': { id: 'microwave_01', name: 'Aparelho Micro-ondas', icon: 'Objects/Microwave_01.png', cost: 0, rarity: 'incomum', category: 'eletronicos', placement: 'desk', obtainable: 'chest' },
@@ -188,7 +180,15 @@ export const ITEM_CATALOG: Record<string, Item> = {
     'wall_decoration_blue': { id: 'wall_decoration_blue', name: 'Flâmula Azul', icon: 'Objects/wall_decoration_blue.png', cost: 0, rarity: 'comum', category: 'decoracao', placement: 'wall', obtainable: 'chest' },
     'wall_decoration_green': { id: 'wall_decoration_green', name: 'Flâmula Verde', icon: 'Objects/wall_decoration_green.png', cost: 0, rarity: 'comum', category: 'decoracao', placement: 'wall', obtainable: 'chest' },
     'wall_decoration_red': { id: 'wall_decoration_red', name: 'Flâmula Vermelha', icon: 'Objects/wall_decoration_red.png', cost: 0, rarity: 'comum', category: 'decoracao', placement: 'wall', obtainable: 'chest' },
-    'wall_decoration_yellow': { id: 'wall_decoration_yellow', name: 'Flâmula Amarela', icon: 'Objects/wall_decoration_yellow.png', cost: 0, rarity: 'comum', category: 'decoracao', placement: 'wall', obtainable: 'chest' }
+    'wall_decoration_yellow': { id: 'wall_decoration_yellow', name: 'Flâmula Amarela', icon: 'Objects/wall_decoration_yellow.png', cost: 0, rarity: 'comum', category: 'decoracao', placement: 'wall', obtainable: 'chest' },
+
+    // RECOMPENSAS EXCLUSIVAS DAS ÚLTIMAS CONQUISTAS
+    'trophy_master': { id: 'trophy_master', name: 'Troféu Kaiji de Platina', icon: 'Objects/chest_front_full.png', cost: 0, rarity: 'lendaria', category: 'decoracao', placement: 'desk', obtainable: 'chest' },
+    'throne_gold': { id: 'throne_gold', name: 'Trono Imperial de Ouro', icon: 'Objects/Armchair_02.png', cost: 0, rarity: 'lendaria', category: 'moveis', placement: 'floor', obtainable: 'chest' },
+    'arcade_cabinet': { id: 'arcade_cabinet', name: 'Fliperama Lendário Teiai', icon: 'Objects/GameConsole_01.png', cost: 0, rarity: 'lendaria', category: 'eletronicos', placement: 'floor', obtainable: 'chest' },
+    'dragon_statue': { id: 'dragon_statue', name: 'Estátua Alquímica Suprema', icon: 'Objects/cauldron_hot_red.png', cost: 0, rarity: 'lendaria', category: 'decoracao', placement: 'floor', obtainable: 'chest' },
+    'crown_legend': { id: 'crown_legend', name: 'Coroa Imperial Suprema', icon: 'Objects/shield_yellow.png', cost: 0, rarity: 'lendaria', category: 'decoracao', placement: 'desk', obtainable: 'chest' }
 };
+
 
 export const UNLOCKABLE_THEMES = ['yakuza', 'cyber', 'gold', 'zen', 'dusk', 'sakura', 'forest', 'coffee', 'nordic'];
