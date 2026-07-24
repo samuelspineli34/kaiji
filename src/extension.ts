@@ -535,7 +535,7 @@ class KaijiSidebarProvider implements vscode.WebviewViewProvider {
             s1 = '🍒'; s2 = '🍒'; s3 = '🍒';
             rewardCoins = 500; this.addCoins(rewardCoins);
         } else if (roll < 0.4000) {
-            s1 = '🪙'; s2 = '🪙'; s3 = '🪙';
+            s1 = '♟'; s2 = '♟'; s3 = '♟';
             rewardCoins = Math.floor(Math.random() * 51) + 50; this.addCoins(rewardCoins);
         } else if (roll < 0.6500) {
             s1 = '💣'; s2 = '🍒'; s3 = '💰';
